@@ -17,19 +17,6 @@ const (
 	StatusBadRequest          = "Bad Request"
 )
 
-//Check MACData struct for empty string
-func (intInfo *MACData) updateEmpty() {
-	if intInfo.PartNumber == "" {
-		intInfo.PartNumber = "NULL"
-	}
-	if intInfo.SerialNumber == "" {
-		intInfo.SerialNumber = "NULL"
-	}
-	if intInfo.VendorName == "" {
-		intInfo.VendorName = "NULL"
-	}
-}
-
 //StartServerDell ...
 // ResetType@Redfish.AllowableValues
 // 0	"On"
@@ -277,7 +264,7 @@ func (c *IloClient) GetNetworkPortsDell() ([]MACData, error) {
 				Vlan:         "NULL",
 			}
 
-			macData.updateEmpty()
+			macData.UpdateEmpty()
 			Macs = append(Macs, macData)
 		}
 

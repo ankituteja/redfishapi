@@ -3783,6 +3783,19 @@ type MACData struct {
 	VendorName   string `json:"verndorname"`
 }
 
+//Check MACData struct for empty string
+func (intInfo *MACData) UpdateEmpty() {
+	if intInfo.PartNumber == "" {
+		intInfo.PartNumber = "NULL"
+	}
+	if intInfo.SerialNumber == "" {
+		intInfo.SerialNumber = "NULL"
+	}
+	if intInfo.VendorName == "" {
+		intInfo.VendorName = "NULL"
+	}
+}
+
 //BootOrderData ...
 type BootOrderData struct {
 	Enabled bool   `json:"enabled"`
