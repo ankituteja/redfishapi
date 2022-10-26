@@ -1,4 +1,4 @@
-module github.com/kgrvamsi/redfishapi
+module github.com/ankituteja/redfishapi
 
 go 1.12
 
