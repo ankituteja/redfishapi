@@ -1291,3 +1291,16 @@ func (c *IloClient) GetRemoteImageStatusDell() (ImageStatusDell, error) {
 
 	return x, nil
 }
+
+//ResetIdracConfigurationDell ... Will Reset Idrac Config to defaults and will take some time to come up
+func (c *IloClient) ResetIdracConfigurationDell() (string, error) {
+	url := c.Hostname + "/redfish/v1/Dell/Managers/iDRAC.Embedded.1/DelliDRACCardService/Actions/DelliDRACCardService.iDRACResetCfg"
+	var jsonStr = []byte(`{"Force": "Graceful", "Preserve": "ResetAllWithRootDefaults"}`)
+
+	_, _, _, err := queryData(c, "POST", url, jsonStr)
+	if err != nil {
+		return "", err
+	}
+
+	return "Idrac Reset", nil
+}
