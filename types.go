@@ -4192,3 +4192,13 @@ type ImageStatusDell struct {
 	Name                   string   `json:"Name"`
 	WriteProtected         bool     `json:"WriteProtected"`
 }
+
+type IdracNICInfo struct {
+	HostName      string `json:"HostName"`
+	IPv4Addresses []struct {
+		Address       string `json:"Address"`
+		AddressOrigin string `json:"AddressOrigin"`
+		Gateway       string `json:"Gateway"`
+		SubnetMask    string `json:"SubnetMask"`
+	}
+}
