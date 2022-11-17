@@ -1343,10 +1343,7 @@ func (c *IloClient) GetMacAddressDellByODataId(oDataId string) (GetMacAddressDel
 	}
 
 	var x GetMacAddressDell
+	err = json.Unmarshal(resp, &x)
 
-	if err := json.Unmarshal(resp, &x); err != nil {
-		return GetMacAddressDell{}, err
-	}
-
-	return x, nil
+	return x, err
 }
