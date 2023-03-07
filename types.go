@@ -3781,6 +3781,7 @@ type MACData struct {
 	PartNumber   string `json:"partnumber"`
 	SerialNumber string `json:"serialnumber"`
 	VendorName   string `json:"verndorname"`
+	LinkStatus   string `json:"linkstatus"`
 }
 
 //Check MACData struct for empty string
