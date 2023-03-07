@@ -303,6 +303,7 @@ func (c *IloClient) GetMacAddressDell() (string, error) {
 			Status:      y.Status.Health,
 			State:       y.Status.State,
 			Vlan:        y.VLAN,
+			LinkStatus:  y.LinkStatus,
 		}
 		Macs = append(Macs, macData)
 	}
