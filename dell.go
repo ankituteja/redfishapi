@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -1347,4 +1348,61 @@ func (c *IloClient) GetMacAddressDellByODataId(oDataId string) (GetMacAddressDel
 	err = json.Unmarshal(resp, &x)
 
 	return x, err
+}
+
+// GetStorageRaidDell ... Will Fetch the Storage Raid Details
+func (c *IloClient) GetStorageRaidDell() ([]StorageRaidDetailsDell, error) {
+
+	url := c.Hostname + "/redfish/v1/Systems/System.Embedded.1/Storage"
+
+	resp, _, _, err := queryData(c, "GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var (
+		x         MemberCountDell
+		_raiddata []StorageRaidDetailsDell
+	)
+
+	json.Unmarshal(resp, &x)
+	for i := range x.Members {
+
+		_url := c.Hostname + x.Members[i].OdataId + "/Volumes"
+		resp, _, _, err := queryData(c, "GET", _url, nil)
+		if err != nil {
+			return nil, err
+		}
+		var y MemberCountDell
+		json.Unmarshal(resp, &y)
+
+		for i := range y.Members {
+
+			_url := c.Hostname + y.Members[i].OdataId
+			resp, _, _, err := queryData(c, "GET", _url, nil)
+			if err != nil {
+				return nil, err
+			}
+
+			var z StorageRaidRawDell
+			json.Unmarshal(resp, &z)
+			raidDevice := StorageRaidDetailsDell{
+				Name:             z.Name,
+				Id:               z.Id,
+				Layout:           z.RAIDType,
+				MediaType:        z.Oem.Dell.DellVirtualDisk.MediaType,
+				DrivesCount:      strconv.Itoa(z.Links.DrivesCount),
+				ReadCachePolicy:  z.Oem.Dell.DellVirtualDisk.ReadCachePolicy,
+				CapacityBytes:    strconv.Itoa(z.CapacityBytes),
+				StripeSize:       z.Oem.Dell.DellVirtualDisk.StripeSize,
+				WriteCachePolicy: z.Oem.Dell.DellVirtualDisk.WriteCachePolicy,
+			}
+
+			_raiddata = append(_raiddata, raidDevice)
+
+		}
+
+	}
+	return _raiddata, nil
+
 }
