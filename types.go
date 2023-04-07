@@ -4203,3 +4203,77 @@ type IdracNICInfo struct {
 		SubnetMask    string `json:"SubnetMask"`
 	}
 }
+
+type StorageRaidRawDell struct {
+	Odata_context        string   `json:"@odata.context"`
+	Odata_id             string   `json:"@odata.id"`
+	Odata_type           string   `json:"@odata.type"`
+	BlockSizeBytes       int      `json:"BlockSizeBytes"`
+	CapacityBytes        int      `json:"CapacityBytes"`
+	Description          string   `json:"Description"`
+	Encrypted            bool     `json:"Encrypted"`
+	EncryptionTypes      []string `json:"EncryptionTypes"`
+	EnctyptionTypesCount int      `json:"EncryptionTypes@odata.count"`
+	Id                   string   `json:"Id"`
+	IdentifiersCount     int      `json:"Identifiers@odata.count"`
+	Links                struct {
+		Drives      []string `json:"Drives"`
+		DrivesCount int      `json:"Drives@odata.count"`
+	} `json:"Links"`
+	Name string `json:"Name"`
+	Oem  struct {
+		Dell struct {
+			Odata_type      string `json:"@odata.type"`
+			DellVirtualDisk struct {
+				BusProtocol              string `json:"BusProtocol"`
+				Cachecade                string `json:"Cachecade"`
+				Description              string `json:"Description"`
+				DiskCachePolicy          string `json:"DiskCachePolicy"`
+				Id                       string `json:"Id"`
+				LastSystemInventoryTime  string `json:"LastSystemInventoryTime"`
+				LastUpdateTime           string `json:"LastUpdateTime"`
+				LockStatus               string `json:"LockStatus"`
+				MediaType                string `json:"MediaType"`
+				Name                     string `json:"Name"`
+				ObjectStatus             string `json:"ObjectStatus"`
+				OperationName            string `json:"OperationName"`
+				OperationPercentComplete string `json:"OperationPercentComplete"`
+				PrimaryStatus            string `json:"PrimaryStatus"`
+				RaidStatus               string `json:"RaidStatus"`
+				ReadCachePolicy          string `json:"ReadCachePolicy"`
+				RemainingRedundancy      int    `json:"RemainingRedundancy"`
+				SpanDepth                int    `json:"SpanDepth"`
+				SpanLength               int    `json:"SpanLength"`
+				StartingLBAinBlocks      int    `json:"StartingLBAinBlocks"`
+				StripeSize               string `json:"StripeSize"`
+				T10PIStatus              string `json:"T10PIStatus"`
+				VirtualDiskTargetID      int    `json:"VirtualDiskTargetID"`
+				WriteCachePolicy         string `json:"WriteCachePolicy"`
+				Odata_context            string `json:"@odata.context"`
+				Odata_type               string `json:"@odata.type"`
+				Oddata_id                string `json:"@odata.id"`
+			} `json:"DellVirtualDisk"`
+		} `json:"Dell"`
+	} `json:"Oem"`
+	OperationsCount    int    `json:"Operations@odata.count"`
+	OptimumIOSizeBytes int    `json:"OptimumIOSizeBytes"`
+	RAIDType           string `json:"RAIDType"`
+	Status             struct {
+		Health       string `json:"Health"`
+		HealthRollup string `json:"HealthRollup"`
+		State        string `json:"State"`
+	} `json:"Status"`
+	VolumeType string `json:"VolumeType"`
+}
+
+type StorageRaidDetailsDell struct {
+	Name             string `json:"Name"`
+	Id               string `json:"Id"`
+	Layout           string `json:"Layout"`
+	MediaType        string `json:"MediaType"`
+	DrivesCount      string `json:"DrivesCount"`
+	ReadCachePolicy  string `json:"ReadCachePolicy"`
+	CapacityBytes    string `json:"CapacityBytes"`
+	StripeSize       string `json:"StripeSize"`
+	WriteCachePolicy string `json:"WriteCachePolicy"`
+}
