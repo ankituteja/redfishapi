@@ -4277,3 +4277,58 @@ type StorageRaidDetailsDell struct {
 	StripeSize       string `json:"StripeSize"`
 	WriteCachePolicy string `json:"WriteCachePolicy"`
 }
+
+// ThermalSensorDetailsDell ... Struct for thermal sensor details
+type ThermalSensorDetailsDell struct {
+	OdataContext string `json:"@odata.context"`
+	OdataID      string `json:"@odata.id"`
+	OdataType    string `json:"@odata.type"`
+	Name         string `json:"Name"`
+	Id           string `json:"Id"`
+	Description  string `json:"Description"`
+	ReadingType  string `json:"ReadingType"`
+	ReadingUnits string `json:"ReadingUnits"`
+
+	Status struct {
+		Health string `json:"Health"`
+		State  string `json:"State"`
+	} `json:"Status"`
+	Reading         float64 `json:"Reading"`
+	PhysicalContext string  `json:"PhysicalContext"`
+	Oem             struct {
+		Dell struct {
+			OdataType      string   `json:"@odata.type"`
+			CurrentState   string   `json:"CurrentState"`
+			DeviceID       string   `json:"DeviceID"`
+			PossibleStates []string `json:"PossibleStates"`
+			RequestedState string   `json:"RequestedState"`
+		} `json:"Dell"`
+	} `json:"Oem"`
+
+	Thresholds struct {
+		UpperCritical struct {
+			Reading int `json:"Reading"`
+		} `json:"UpperCritical"`
+		UpperCaution struct {
+			Reading interface{} `json:"Reading"`
+		} `json:"UpperCaution"`
+		LowerCaution struct {
+			Reading interface{} `json:"Reading"`
+		} `json:"LowerCaution"`
+		LowerCritical struct {
+			Reading int `json:"Reading"`
+		} `json:"LowerCritical"`
+	} `json:"Thresholds"`
+}
+
+// ThermalHealthDetailsDell ... Struct for thermal health details
+type ThermalHealthDetailsDell struct {
+	Name          string      `json:"Name"`
+	Reading       float64     `json:"Reading"`
+	State         string      `json:"State"`
+	Health        string      `json:"Health"`
+	UpperCritical int         `json:"UpperCritical"`
+	UpperCaution  interface{} `json:"UpperCaution"`
+	LowerCaution  interface{} `json:"LowerCaution"`
+	LowerCritical int         `json:"LowerCritical"`
+}
