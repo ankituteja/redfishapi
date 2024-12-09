@@ -1406,3 +1406,53 @@ func (c *IloClient) GetStorageRaidDell() ([]StorageRaidDetailsDell, error) {
 	return _raiddata, nil
 
 }
+
+// GetThermalHealthDell fetches the Thermal Health Details
+func (c *IloClient) GetThermalHealthDell() ([]ThermalHealthDetailsDell, error) {
+	_url := c.Hostname + "/redfish/v1/Chassis/System.Embedded.1/Sensors"
+
+	resp, _, _, err := queryData(c, "GET", _url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var (
+		x            MemberCountDell
+		_thermalData []ThermalHealthDetailsDell
+	)
+
+	json.Unmarshal(resp, &x)
+	for i := range x.Members {
+
+		_url := c.Hostname + x.Members[i].OdataId
+		parts := strings.Split(_url, "/")
+		lastPart := parts[len(parts)-1]
+
+		if !strings.Contains(lastPart, "Temp") {
+			continue
+		}
+
+		resp, _, _, err := queryData(c, "GET", _url, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		var z ThermalSensorDetailsDell
+		json.Unmarshal(resp, &z)
+
+		thermalDevice := ThermalHealthDetailsDell{
+			Name:          z.Name,
+			Reading:       z.Reading,
+			State:         z.Status.State,
+			Health:        z.Status.Health,
+			UpperCritical: z.Thresholds.UpperCritical.Reading,
+			UpperCaution:  z.Thresholds.UpperCaution.Reading,
+			LowerCaution:  z.Thresholds.LowerCaution.Reading,
+			LowerCritical: z.Thresholds.LowerCritical.Reading,
+		}
+
+		_thermalData = append(_thermalData, thermalDevice)
+	}
+
+	return _thermalData, nil
+}
