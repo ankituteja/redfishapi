@@ -54,7 +54,7 @@ func (c *IloClient) StopServerDell() (string, error) {
 	return "Server Stopped", nil
 }
 
-// GracefulRestartDell ... Will Reset Idrac and will take some time to come up
+// GracefulRestartDell ... Will Reboot Idrac and will take some time to come up
 func (c *IloClient) GracefulRestartDell() (string, error) {
 	url := c.Hostname + "/redfish/v1/Managers/iDRAC.Embedded.1/Actions/Manager.Reset"
 
@@ -64,7 +64,7 @@ func (c *IloClient) GracefulRestartDell() (string, error) {
 		return "", err
 	}
 
-	return "Idrac Reset", nil
+	return "Idrac Reboot", nil
 
 }
 
@@ -1301,11 +1301,11 @@ func (c *IloClient) GetRemoteImageStatusDell() (ImageStatusDell, error) {
 }
 
 // ResetIdracConfigurationDell ... Will Reset Idrac Config to defaults and will take some time to come up
-func (c *IloClient) ResetIdracConfigurationDell() (string, error) {
+func (c *IloClient) ResetIdracConfigurationDell(force string, preserve string) (string, error) {
 	url := c.Hostname + "/redfish/v1/Dell/Managers/iDRAC.Embedded.1/DelliDRACCardService/Actions/DelliDRACCardService.iDRACResetCfg"
 	data, _ := json.Marshal(map[string]interface{}{
-		"Force":    "Graceful",
-		"Preserve": "ResetAllWithRootDefaults",
+		"Force":    force,
+		"Preserve": preserve,
 	})
 
 	_, _, _, err := queryData(c, "POST", url, []byte(data))
