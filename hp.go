@@ -3,10 +3,9 @@ package redfishapi
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
 )
 
-//StartServerHP ...
+// StartServerHP ...
 // ResetType@Redfish.AllowableValues
 // 0	"On"
 // 1	"ForceOff"
@@ -25,7 +24,7 @@ func (c *IloClient) StartServerHP() (string, error) {
 	return "Server Started", nil
 }
 
-//StopServerHP ... Will Request to stop the server
+// StopServerHP ... Will Request to stop the server
 func (c *IloClient) StopServerHP() (string, error) {
 	url := c.Hostname + "/redfish/v1/Systems/1/Actions/ComputerSystem.Reset/"
 	var jsonStr = []byte(`{"ResetType": "ForceOff"}`)
@@ -37,7 +36,7 @@ func (c *IloClient) StopServerHP() (string, error) {
 	return "Server Stopped", nil
 }
 
-//GetSystemInfoHP ... Will fetch the system info
+// GetSystemInfoHP ... Will fetch the system info
 func (c *IloClient) GetSystemInfoHP() (SystemData, error) {
 
 	url := c.Hostname + "/redfish/v1/Systems/1"
@@ -55,8 +54,8 @@ func (c *IloClient) GetSystemInfoHP() (SystemData, error) {
 		Memory:          x.Memory.TotalSystemMemoryGB,
 		Model:           x.Model,
 		PowerState:      x.PowerState,
-		Processors:      x.Processors.Count,
-		ProcessorFamily: x.Processors.ProcessorFamily,
+		Processors:      x.ProcessorSummary.Count,
+		ProcessorFamily: x.ProcessorSummary.Model,
 		SerialNumber:    x.SerialNumber,
 	}
 
@@ -64,7 +63,7 @@ func (c *IloClient) GetSystemInfoHP() (SystemData, error) {
 
 }
 
-//GetServerPowerStateHP ... Will fetch the current state of the Server
+// GetServerPowerStateHP ... Will fetch the current state of the Server
 func (c *IloClient) GetServerPowerStateHP() (string, error) {
 	url := c.Hostname + "/redfish/v1/Systems/1"
 	resp, _, _, err := queryData(c, "GET", url, nil)
@@ -80,7 +79,7 @@ func (c *IloClient) GetServerPowerStateHP() (string, error) {
 
 }
 
-//CheckLoginHP ... Will check the credentials of the Server
+// CheckLoginHP ... Will check the credentials of the Server
 func (c *IloClient) CheckLoginHP() (string, error) {
 	url := c.Hostname + "/redfish/v1/Systems/1"
 	resp, _, _, err := queryData(c, "GET", url, nil)
@@ -92,7 +91,7 @@ func (c *IloClient) CheckLoginHP() (string, error) {
 	return string(data.Status.Health), nil
 }
 
-//GetFirmwareHP ... will fetch the Firmware details
+// GetFirmwareHP ... will fetch the Firmware details
 func (c *IloClient) GetFirmwareHP() ([]FirmwareData, error) {
 
 	url := c.Hostname + "/redfish/v1/Systems/1/FirmwareInventory/"
@@ -179,7 +178,7 @@ func (c *IloClient) GetFirmwareHP() ([]FirmwareData, error) {
 	return _firmdata, nil
 }
 
-//GetThermalHealthHP ... will fetch the Thermal Health
+// GetThermalHealthHP ... will fetch the Thermal Health
 func (c *IloClient) GetThermalHealthHP() ([]HealthList, error) {
 	url := c.Hostname + "/redfish/v1/Chassis/1/Thermal/"
 	resp, _, _, err := queryData(c, "GET", url, nil)
@@ -211,7 +210,7 @@ func (c *IloClient) GetThermalHealthHP() ([]HealthList, error) {
 	return _health, nil
 }
 
-//GetPowerHealthHP ... will fetch the Power Health
+// GetPowerHealthHP ... will fetch the Power Health
 func (c *IloClient) GetPowerHealthHP() ([]HealthList, error) {
 	url := c.Hostname + "/redfish/v1/Chassis/1/Power/"
 	resp, _, _, err := queryData(c, "GET", url, nil)
@@ -237,7 +236,7 @@ func (c *IloClient) GetPowerHealthHP() ([]HealthList, error) {
 	return _health, nil
 }
 
-//GetInterfaceHealthHP ... will fetch the Interface Health
+// GetInterfaceHealthHP ... will fetch the Interface Health
 func (c *IloClient) GetInterfaceHealthHP() ([]HealthList, error) {
 	url := c.Hostname + "/redfish/v1/Managers/1/EthernetInterfaces/"
 	resp, _, _, err := queryData(c, "GET", url, nil)
@@ -262,7 +261,7 @@ func (c *IloClient) GetInterfaceHealthHP() ([]HealthList, error) {
 	return _health, nil
 }
 
-//GetProcessorHealthHP ... will Fetch the Processor Health Details
+// GetProcessorHealthHP ... will Fetch the Processor Health Details
 func (c *IloClient) GetProcessorInfoHP() ([]ProcessorInfoHP, error) {
 
 	url := c.Hostname + "/redfish/v1/Systems/1/Processors/"
@@ -279,7 +278,7 @@ func (c *IloClient) GetProcessorInfoHP() ([]ProcessorInfoHP, error) {
 	json.Unmarshal(resp, &x)
 
 	for i := range x.Members {
-		_url := c.Hostname + x.Members[i].OdataID
+		_url := c.Hostname + x.Members[i].OdataId
 		resp, _, _, err := queryData(c, "GET", _url, nil)
 		if err != nil {
 			return nil, err
@@ -296,7 +295,7 @@ func (c *IloClient) GetProcessorInfoHP() ([]ProcessorInfoHP, error) {
 
 }
 
-//GetProcessorHealthHP ... will Fetch the Processor Health Details
+// GetProcessorHealthHP ... will Fetch the Processor Health Details
 func (c *IloClient) GetProcessorHealthHP() ([]HealthList, error) {
 
 	url := c.Hostname + "/redfish/v1/Systems/1/Processors/"
@@ -313,7 +312,7 @@ func (c *IloClient) GetProcessorHealthHP() ([]HealthList, error) {
 	json.Unmarshal(resp, &x)
 
 	for i := range x.Members {
-		_url := c.Hostname + x.Members[i].OdataID
+		_url := c.Hostname + x.Members[i].OdataId
 		resp, _, _, err := queryData(c, "GET", _url, nil)
 		if err != nil {
 			return nil, err
@@ -335,7 +334,7 @@ func (c *IloClient) GetProcessorHealthHP() ([]HealthList, error) {
 
 }
 
-//GetUserAccountsHP ... will fetch the current User Accounts
+// GetUserAccountsHP ... will fetch the current User Accounts
 func (c *IloClient) GetUserAccountsHP() ([]Accounts, error) {
 
 	url := c.Hostname + "/redfish/v1/AccountService/Accounts"
@@ -376,7 +375,7 @@ func (c *IloClient) GetUserAccountsHP() ([]Accounts, error) {
 
 }
 
-//GetSystemEventLogsHP ... will fetch the SystemEvent Logs
+// GetSystemEventLogsHP ... will fetch the SystemEvent Logs
 func (c *IloClient) GetSystemEventLogsHP() ([]SystemEventLogRes, error) {
 
 	url := c.Hostname + "/redfish/v1/Managers/1/LogServices/IEL/Entries/"
@@ -409,7 +408,7 @@ func (c *IloClient) GetSystemEventLogsHP() ([]SystemEventLogRes, error) {
 
 }
 
-//GetBiosDataHP ... will fetch the Bios Details
+// GetBiosDataHP ... will fetch the Bios Details
 func (c *IloClient) GetBiosDataHP() (BiosDataHP, error) {
 
 	url := c.Hostname + "/redfish/v1/systems/1/bios/settings/"
@@ -582,7 +581,7 @@ func (c *IloClient) GetBiosDataHP() (BiosDataHP, error) {
 	return _BiosData, nil
 }
 
-//GetLicenseInfoHP ... will fetch the current License Details
+// GetLicenseInfoHP ... will fetch the current License Details
 func (c *IloClient) GetLicenseInfoHP() (LicenseInfo, error) {
 
 	url := c.Hostname + "/redfish/v1/Managers/1/LicenseService/"
@@ -605,7 +604,7 @@ func (c *IloClient) GetLicenseInfoHP() (LicenseInfo, error) {
 	return _result, nil
 }
 
-//GetPCISlotsHp ... will fetch the PCI Slots Details
+// GetPCISlotsHp ... will fetch the PCI Slots Details
 func (c *IloClient) GetPCISlotsHp() ([]PCISlotsInfo, error) {
 
 	url := c.Hostname + "/redfish/v1/Systems/1/PCISlots/"
@@ -633,33 +632,39 @@ func (c *IloClient) GetPCISlotsHp() ([]PCISlotsInfo, error) {
 
 }
 
-//GetEthernetInterfacesHP ... will fetch the EthernetInterfaces Details
+// GetEthernetInterfacesHP ... will fetch the EthernetInterfaces Details
 func (c *IloClient) GetEthernetInterfacesHP() ([]MACData, error) {
-
-	url := c.Hostname + "/redfish/v1/Managers/1/EthernetInterfaces/"
+	url := c.Hostname + "/redfish/v1/Systems/1/EthernetInterfaces/"
 	resp, _, _, err := queryData(c, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	var (
-		x        EthernetInterfacesHP
-		_macData []MACData
-	)
-
+	var x MemberCountHP
 	json.Unmarshal(resp, &x)
 
-	for i := range x.Items {
+	var _macData []MACData
+	for i := range x.Members {
+		var y GetMacAddressHP
+		_url := c.Hostname + x.Members[i].OdataId
+		resp, _, _, err := queryData(c, "GET", _url, nil)
+		if err != nil {
+			return nil, err
+		}
+		json.Unmarshal(resp, &y)
+
 		_result := MACData{
-			Name:        x.Items[i].Name,
-			Description: x.Items[i].Description,
-			MacAddress:  x.Items[i].MacAddress,
-			State:       x.Items[i].Status.State,
-			Status:      strconv.FormatBool(x.Items[i].Oem.Hp.NICEnabled),
+			Name:        "EthernetInterface-" + y.Id,
+			Description: "Null",
+			MacAddress:  y.MACAddress,
+			State:       y.Status.State,
+			Status:      y.Status.Health,
 			Vlan:        "Null",
 		}
+
+		_result.UpdateEmpty()
 		_macData = append(_macData, _result)
 	}
-	return _macData, nil
 
+	return _macData, nil
 }
