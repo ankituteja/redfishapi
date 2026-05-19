@@ -2,7 +2,7 @@ package redfishapi
 
 //Dell Based Structs
 
-//SysAttrDell ... System Attributes from the Redfish API
+// SysAttrDell ... System Attributes from the Redfish API
 type SysAttrDell struct {
 	RedfishSettings struct {
 		odataContext   string
@@ -357,7 +357,7 @@ type SysAttributesData struct {
 	WarrantyInfo_1_UnitType                                              string `json:"WarrantyInfo.1.UnitType"`
 }
 
-//IDRACAttrDell ... IDRAC Attributes from the Redfish API
+// IDRACAttrDell ... IDRAC Attributes from the Redfish API
 type IDRACAttrDell struct {
 	RedfishSettings struct {
 		odataContext   string
@@ -1261,7 +1261,7 @@ type IDRACAttributesData struct {
 	VFlashSD_1_WriteProtect                                              string      `json:"vFlashSD.1.WriteProtect"`
 }
 
-//LifeCycleAttrDell ... LifeCycle Controller Attributes from the Redfish API
+// LifeCycleAttrDell ... LifeCycle Controller Attributes from the Redfish API
 type LifeCycleAttrDell struct {
 	RedfishSettings struct {
 		_odata_context string
@@ -1303,7 +1303,7 @@ type LifeCycleAttrDell struct {
 	Name        string `json:"Name"`
 }
 
-//BiosDell ... Bios Settings from the Redfish API
+// BiosDell ... Bios Settings from the Redfish API
 type BiosAttrDell struct {
 	Redfish_Settings struct {
 		_odata_context string
@@ -1556,7 +1556,7 @@ type BiosAttributesData struct {
 	WriteDataCrc                 string      `json:"WriteDataCrc"`
 }
 
-//GetMacAddressDell ... Fetch the Mac Address Info from the Redfish API
+// GetMacAddressDell ... Fetch the Mac Address Info from the Redfish API
 type GetMacAddressDell struct {
 	_odata_context                     string
 	_odata_id                          string
@@ -1731,7 +1731,7 @@ type NetworkDeviceDell struct {
 	} `json:"Status"`
 }
 
-//SystemViewDell ... Fetch the System View Attributes from the Redfish API
+// SystemViewDell ... Fetch the System View Attributes from the Redfish API
 type SystemViewDell struct {
 	_odata_context string
 	_odata_id      string
@@ -1915,7 +1915,7 @@ type SystemViewDell struct {
 	UUID string `json:"UUID"`
 }
 
-//BootOrderDell ... Fetch the Boot Order Info from the Refish API
+// BootOrderDell ... Fetch the Boot Order Info from the Refish API
 type BootOrderDell struct {
 	_Redfish_Settings struct {
 		_odata_context string
@@ -1942,7 +1942,7 @@ type BootOrderDell struct {
 	Name        string `json:"Name"`
 }
 
-//FirmwareDataDell ...
+// FirmwareDataDell ...
 type FirmwareDataDell struct {
 	_odata_context string
 	_odata_id      string
@@ -1980,7 +1980,7 @@ type FirmwareDataDell struct {
 	Version    string `json:"Version"`
 }
 
-//PowerDataDell ...
+// PowerDataDell ...
 type PowerDataDell struct {
 	_odata_context string
 	_odata_id      string
@@ -2148,7 +2148,7 @@ type PowerDataDell struct {
 	Voltagescount int `json:"Voltages@odata.count"`
 }
 
-//AccountsInfoDell ...
+// AccountsInfoDell ...
 type AccountsInfoDell struct {
 	_odata_context string
 	_odata_id      string
@@ -2168,7 +2168,7 @@ type AccountsInfoDell struct {
 	UserName string      `json:"UserName"`
 }
 
-//SystemEventLogsV1Dell ...
+// SystemEventLogsV1Dell ...
 type SystemEventLogsV1Dell struct {
 	_odata_context string
 	_odata_id      string
@@ -2200,7 +2200,7 @@ type SystemEventLogsV1Dell struct {
 	Name                string `json:"Name"`
 }
 
-//SystemEventLogsV2Dell ...
+// SystemEventLogsV2Dell ...
 type SystemEventLogsV2Dell struct {
 	_odata_context string
 	_odata_id      string
@@ -2228,7 +2228,7 @@ type SystemEventLogsV2Dell struct {
 	Name                string `json:"Name"`
 }
 
-//LifeCycleLogsV1Dell ...
+// LifeCycleLogsV1Dell ...
 type LifeCycleLogsV1Dell struct {
 	Odata_context string
 	Odata_id      string
@@ -2256,7 +2256,7 @@ type LifeCycleLogsV1Dell struct {
 	} `json:"Members"`
 }
 
-//ThermalHealthListDell ...
+// ThermalHealthListDell ...
 type ThermalHealthListDell struct {
 	_odata_context string
 	_odata_id      string
@@ -2342,7 +2342,7 @@ type ThermalHealthListDell struct {
 	Temperaturescount int `json:"Temperatures@odata.count"`
 }
 
-//MemberCountDell ...
+// MemberCountDell ...
 type MemberCountDell struct {
 	OdataContext        string    `json:"@odata.context"`
 	OdataId             string    `json:"@odata.id"`
@@ -2357,7 +2357,7 @@ type Members struct {
 	OdataId string `json:"@odata.id"`
 }
 
-//ProcessorDataDell ...
+// ProcessorDataDell ...
 type ProcessorDataDell struct {
 	_odata_context string
 	_odata_id      string
@@ -2412,7 +2412,7 @@ type ProcessorDataDell struct {
 	TotalThreads int `json:"TotalThreads"`
 }
 
-//ProcessorsListDataDell ...
+// ProcessorsListDataDell ...
 type ProcessorsListDataDell struct {
 	_odata_context string
 	_odata_id      string
@@ -2425,7 +2425,7 @@ type ProcessorsListDataDell struct {
 	Name                string `json:"Name"`
 }
 
-//StorageCollectionDell ...
+// StorageCollectionDell ...
 type StorageCollectionDell struct {
 	_odata_context string
 	_odata_id      string
@@ -2584,7 +2584,7 @@ type StorageDriveDetailsDell struct {
 
 //HP Based Structs
 
-//FirmwareInventoryHP ...
+// FirmwareInventoryHP ...
 type FirmwareInventoryHP struct {
 	OdataContext string `json:"@odata.context"`
 	OdataID      string `json:"@odata.id"`
@@ -2710,7 +2710,7 @@ type FirmwareInventoryHP struct {
 	} `json:"links"`
 }
 
-//SystemInfoHp is a struct which fetches the Overall System High Level info and its a Singleton Resource
+// SystemInfoHp is a struct which fetches the Overall System High Level info and its a Singleton Resource
 type SystemInfoHP struct {
 	OdataContext string `json:"@odata.context"`
 	OdataID      string `json:"@odata.id"`
@@ -2916,20 +2916,18 @@ type SystemInfoHP struct {
 	} `json:"links"`
 }
 
-//MemberCountHP ...
+// MemberCountHP ...
 type MemberCountHP struct {
-	OdataContext string `json:"@odata.context"`
-	OdataID      string `json:"@odata.id"`
-	OdataType    string `json:"@odata.type"`
-	Description  string `json:"Description"`
-	Members      []struct {
-		OdataID string
-	} `json:"Members"`
-	Members_odata_count int    `json:"Members@odata.count"`
-	Name                string `json:"Name"`
+	OdataContext        string    `json:"@odata.context"`
+	OdataID             string    `json:"@odata.id"`
+	OdataType           string    `json:"@odata.type"`
+	Description         string    `json:"Description"`
+	Members             []Members `json:"Members"`
+	Members_odata_count int       `json:"Members@odata.count"`
+	Name                string    `json:"Name"`
 }
 
-//ThermalHealthListHP ...
+// ThermalHealthListHP ...
 type ThermalHealthListHP struct {
 	OdataContext string `json:"@odata.context"`
 	OdataID      string `json:"@odata.id"`
@@ -2982,7 +2980,7 @@ type ThermalHealthListHP struct {
 	} `json:"links"`
 }
 
-//PowerDataHP ...
+// PowerDataHP ...
 type PowerDataHP struct {
 	OdataContext string `json:"@odata.context"`
 	OdataID      string `json:"@odata.id"`
@@ -3084,7 +3082,24 @@ type PowerDataHP struct {
 	} `json:"links"`
 }
 
-//EthernetInterfacesHealthHP ...
+// GetMacAddressHP
+type GetMacAddressHP struct {
+	_odata_context string
+	_odata_id      string
+	_odata_type    string
+	Id             string        `json:"Id"`
+	LinkStatus     string        `json:"LinkStatus"`
+	MACAddress     string        `json:"MACAddress"`
+	Name           string        `json:"Name"`
+	NameServers    []interface{} `json:"NameServers"`
+	SpeedMbps      int           `json:"SpeedMbps"`
+	Status         struct {
+		Health string `json:"Health"`
+		State  string `json:"State"`
+	} `json:"Status"`
+}
+
+// EthernetInterfacesHealthHP ...
 type EthernetInterfacesHP struct {
 	OdataContext string `json:"@odata.context"`
 	OdataID      string `json:"@odata.id"`
@@ -3219,7 +3234,7 @@ type EthernetInterfacesHP struct {
 	} `json:"links"`
 }
 
-//ProcessorInfo4HP ...
+// ProcessorInfo4HP ...
 type ProcessorInfoHP struct {
 	OdataContext   string `json:"@odata.context"`
 	OdataID        string `json:"@odata.id"`
@@ -3291,7 +3306,7 @@ type ProcessorInfoHP struct {
 	} `json:"links"`
 }
 
-//ProcessorInfo5HP ...
+// ProcessorInfo5HP ...
 type ProcessorInfo5HP struct {
 	OdataContext   string `json:"@odata.context"`
 	OdataEtag      string `json:"@odata.etag"`
@@ -3358,7 +3373,7 @@ type ProcessorInfo5HP struct {
 	TotalThreads int64 `json:"TotalThreads"`
 }
 
-//AccountsInfoHP ...
+// AccountsInfoHP ...
 type AccountsInfoHP struct {
 	OdataContext string
 	OdataID      string
@@ -3413,7 +3428,7 @@ type AccountsInfoHP struct {
 	} `json:"links"`
 }
 
-//SystemEventLogsHP ...
+// SystemEventLogsHP ...
 type SystemEventLogsHP struct {
 	OdataContext string
 	OdataID      string
@@ -3469,7 +3484,7 @@ type SystemEventLogsHP struct {
 	} `json:"links"`
 }
 
-//BiosAttrHP ... Bios Settings from the Redfish API
+// BiosAttrHP ... Bios Settings from the Redfish API
 type BiosAttrHP struct {
 	AcpiRootBridgePxm            string      `json:"AcpiRootBridgePxm"`
 	AcpiSlit                     string      `json:"AcpiSlit"`
@@ -3635,7 +3650,7 @@ type BiosAttrHP struct {
 	} `json:"links"`
 }
 
-//LicenseInfoHP ... License Details from the Redfish API
+// LicenseInfoHP ... License Details from the Redfish API
 type LicenseInfoHP struct {
 	OdataContext string `json:"@odata.context"`
 	OdataID      string `json:"@odata.id"`
@@ -3676,7 +3691,7 @@ type LicenseInfoHP struct {
 	} `json:"links"`
 }
 
-//PCISlotsInfoHp ... PCI Slots Details from the Redfish API
+// PCISlotsInfoHp ... PCI Slots Details from the Redfish API
 type PCISlotsInfoHP struct {
 	OdataContext string
 	OdataID      string
@@ -3725,14 +3740,14 @@ type PCISlotsInfoHP struct {
 
 //Custom Structs
 
-//HealthList ...
+// HealthList ...
 type HealthList struct {
 	Name   string `json:"name"`
 	Health string `json:"health"`
 	State  string `json:"state"`
 }
 
-//StorageHealthList ...
+// StorageHealthList ...
 type StorageHealthList struct {
 	Name   string `json:"name"`
 	Health string `json:"health"`
@@ -3740,7 +3755,7 @@ type StorageHealthList struct {
 	Space  int    `json:"space"`
 }
 
-//SystemEventLogRes ...
+// SystemEventLogRes ...
 type SystemEventLogRes struct {
 	EntryCode  string `json:"entry_code"`
 	Message    string `json:"message"`
@@ -3749,7 +3764,7 @@ type SystemEventLogRes struct {
 	Severity   string `json:"severity"`
 }
 
-//LifeCycleEventLogRes ...
+// LifeCycleEventLogRes ...
 type LifeCycleEventLogRes struct {
 	Created     string `json:"created"`
 	Description string `json:"description"`
@@ -3761,7 +3776,7 @@ type LifeCycleEventLogRes struct {
 	Severity    string `json:"severity"`
 }
 
-//Accounts ...
+// Accounts ...
 type Accounts struct {
 	Enabled  bool   `json:"enabled"`
 	Locked   bool   `json:"locked"`
@@ -3770,7 +3785,7 @@ type Accounts struct {
 	Username string `json:"username"`
 }
 
-//MACData ...
+// MACData ...
 type MACData struct {
 	MacAddress   string `json:"macaddress"`
 	Name         string `json:"name"`
@@ -3784,7 +3799,7 @@ type MACData struct {
 	LinkStatus   string `json:"linkstatus"`
 }
 
-//Check MACData struct for empty string
+// Check MACData struct for empty string
 func (intInfo *MACData) UpdateEmpty() {
 	if intInfo.PartNumber == "" {
 		intInfo.PartNumber = "NULL"
@@ -3797,7 +3812,7 @@ func (intInfo *MACData) UpdateEmpty() {
 	}
 }
 
-//BootOrderData ...
+// BootOrderData ...
 type BootOrderData struct {
 	Enabled bool   `json:"enabled"`
 	Index   int    `json:"index"`
@@ -3805,7 +3820,7 @@ type BootOrderData struct {
 	ID      string `json:"id"`
 }
 
-//IDRACData ...
+// IDRACData ...
 type IDRACData struct {
 	VirtualConsoleMaxSessions int    `json:"virtualconsole_maxsessions"`
 	VirtualConsolePluginType  string `json:"virtualconsole_plugintype"`
@@ -3816,7 +3831,7 @@ type IDRACData struct {
 	SnmpAgentCommunity        string `json:"snmp_agent_community"`
 }
 
-//BiosData ... Return Response for Bios Data for Dell
+// BiosData ... Return Response for Bios Data for Dell
 type BiosData struct {
 	BootMode          string `json:"bootmode"`
 	BootSeqRetry      string `json:"boot_sequence_retry"`
@@ -3985,13 +4000,13 @@ type BiosDataHP struct {
 	WakeOnLan                    string `json:"WakeOnLan"`
 }
 
-//SysAttrData ... Return Response for System Attribute Data
+// SysAttrData ... Return Response for System Attribute Data
 type SysAttrData struct {
 	ServerPwrPSRedPolicy string `json:"redundancy_policy"`
 	ServerPwrPSRapidOn   string `json:"hot_spare"`
 }
 
-//LifeCycleData ...
+// LifeCycleData ...
 type LifeCycleData struct {
 	AutoBackup                          string      `json:"autobackup"`
 	AutoDiscovery                       string      `json:"autodiscovery"`
@@ -4017,7 +4032,7 @@ type LifeCycleData struct {
 	VirtualAddressManagementApplication string      `json:"virtual_addr_mgmt_application"`
 }
 
-//SystemData ...
+// SystemData ...
 type SystemData struct {
 	PowerState      string  `json:"power_state"`
 	SerialNumber    string  `json:"serial_number"`
@@ -4029,7 +4044,7 @@ type SystemData struct {
 	ProcessorFamily string  `json:"processor_family"`
 }
 
-//FirmwareData ...
+// FirmwareData ...
 type FirmwareData struct {
 	Name       string `json:"name"`
 	Id         string `json:"id"`
@@ -4037,14 +4052,14 @@ type FirmwareData struct {
 	Updateable bool   `json:"updateable"`
 }
 
-//LicenseInfo ...
+// LicenseInfo ...
 type LicenseInfo struct {
 	Name        string `json:"name"`
 	LicenseKey  string `json:"license_key"`
 	LicenseType string `json:"license_type"`
 }
 
-//PCISlotsInfo ...
+// PCISlotsInfo ...
 type PCISlotsInfo struct {
 	Name       string `json:"name"`
 	Status     string `json:"status"`
@@ -4052,7 +4067,7 @@ type PCISlotsInfo struct {
 	Type       string `json:"type"`
 }
 
-//ExportConfigStatus
+// ExportConfigStatus
 type ExportConfigStatus struct {
 	OdataContext string
 	OdataID      string
@@ -4169,7 +4184,7 @@ type UserListDell struct {
 	Locked   bool   `json:"Locked"`
 }
 
-//ImageStatusDell ...
+// ImageStatusDell ...
 type ImageStatusDell struct {
 	Odata_context string `json:"@odata.context"`
 	Odata_id      string `json:"@odata.id"`
