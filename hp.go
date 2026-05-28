@@ -3,6 +3,7 @@ package redfishapi
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 // StartServerHP ...
@@ -630,6 +631,176 @@ func (c *IloClient) GetPCISlotsHp() ([]PCISlotsInfo, error) {
 
 	return _pciSlots, nil
 
+}
+
+// GetStorageRaidHP ... will fetch HP SmartStorage logical drive details
+func (c *IloClient) GetStorageRaidHP() ([]StorageRaidDetailsDell, error) {
+	url := c.Hostname + "/redfish/v1/Systems/1/SmartStorage/ArrayControllers/"
+	resp, _, _, err := queryData(c, "GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var controllers MemberCountHP
+	json.Unmarshal(resp, &controllers)
+
+	var _raiddata []StorageRaidDetailsDell
+	for i := range controllers.Members {
+		controllerID := strings.TrimSuffix(controllers.Members[i].OdataId, "/")
+		controllerNum := controllerID[strings.LastIndex(controllerID, "/")+1:]
+		logicalDrivesURL := c.Hostname + controllerID + "/LogicalDrives/"
+		logicalDrivesResp, _, _, err := queryData(c, "GET", logicalDrivesURL, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		var logicalCollection MemberCountHP
+		json.Unmarshal(logicalDrivesResp, &logicalCollection)
+
+		for j := range logicalCollection.Members {
+			logicalDriveURL := c.Hostname + logicalCollection.Members[j].OdataId
+			logicalDriveResp, _, _, err := queryData(c, "GET", logicalDriveURL, nil)
+			if err != nil {
+				return nil, err
+			}
+
+			var ld SmartStorageLogicalDriveHP
+			json.Unmarshal(logicalDriveResp, &ld)
+
+			layout := ld.RAIDType
+			if layout == "" {
+				layout = ld.Raid
+			}
+			if layout == "" {
+				layout = ld.FaultTolerance
+			}
+
+			capacityBytes := ""
+			if ld.CapacityBytes > 0 {
+				capacityBytes = fmt.Sprintf("%d", ld.CapacityBytes)
+			} else if ld.CapacityMiB > 0 {
+				capacityBytes = fmt.Sprintf("%d", ld.CapacityMiB*1024*1024)
+			} else if ld.CapacityGB > 0 {
+				capacityBytes = fmt.Sprintf("%d", ld.CapacityGB*1000*1000*1000)
+			}
+
+			drivesCount := ""
+			if ld.Links.DataDrivesCount > 0 {
+				drivesCount = fmt.Sprintf("%d", ld.Links.DataDrivesCount)
+			} else if ld.Links.DataDrives.OdataID != "" {
+				dataDrivesURL := c.Hostname + ld.Links.DataDrives.OdataID
+				dataDrivesResp, _, _, err := queryData(c, "GET", dataDrivesURL, nil)
+				if err == nil {
+					var dataDrivesCollection MemberCountHP
+					json.Unmarshal(dataDrivesResp, &dataDrivesCollection)
+					drivesCount = fmt.Sprintf("%d", len(dataDrivesCollection.Members))
+				}
+			}
+
+			stripeSize := ld.StripeSize
+			if stripeSize == "" && ld.StripeSizeBytes > 0 {
+				stripeSize = fmt.Sprintf("%d", ld.StripeSizeBytes)
+			}
+			if stripeSize == "" && ld.StripSizeBytes > 0 {
+				stripeSize = fmt.Sprintf("%d", ld.StripSizeBytes)
+			}
+
+			raidName := ld.Name
+			if ld.LogicalDriveName != "" {
+				raidName = ld.LogicalDriveName
+			}
+
+			// Build composite ID: LogicalDrive.<id>:ArrayController.<controllerNum>
+			compositeID := fmt.Sprintf("LogicalDrive.%s:ArrayController.%s", ld.ID, controllerNum)
+
+			raidDevice := StorageRaidDetailsDell{
+				Name:             raidName,
+				Id:               compositeID,
+				Layout:           layout,
+				MediaType:        ld.MediaType,
+				DrivesCount:      drivesCount,
+				ReadCachePolicy:  ld.ReadCachePolicy,
+				CapacityBytes:    capacityBytes,
+				StripeSize:       stripeSize,
+				WriteCachePolicy: ld.WriteCachePolicy,
+			}
+
+			_raiddata = append(_raiddata, raidDevice)
+		}
+	}
+
+	return _raiddata, nil
+}
+
+// GetStorageDriveDetailsHP ... will fetch disk drive details from all SmartStorage array controllers
+// and map them to the same return type used by Dell storage drive details.
+func (c *IloClient) GetStorageDriveDetailsHP() ([]StorageDriveDetailsDell, error) {
+	url := c.Hostname + "/redfish/v1/Systems/1/SmartStorage/ArrayControllers/"
+	resp, _, _, err := queryData(c, "GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var controllers MemberCountHP
+	json.Unmarshal(resp, &controllers)
+
+	var _drives []StorageDriveDetailsDell
+	for i := range controllers.Members {
+		controllerID := strings.TrimSuffix(controllers.Members[i].OdataId, "/")
+		drivesURL := c.Hostname + controllerID + "/DiskDrives/"
+		drivesResp, _, _, err := queryData(c, "GET", drivesURL, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		var driveCollection MemberCountHP
+		json.Unmarshal(drivesResp, &driveCollection)
+
+		controllerNum := controllerID[strings.LastIndex(controllerID, "/")+1:]
+
+		for j := range driveCollection.Members {
+			driveURL := c.Hostname + driveCollection.Members[j].OdataId
+			driveResp, _, _, err := queryData(c, "GET", driveURL, nil)
+			if err != nil {
+				return nil, err
+			}
+
+			var raw SmartStorageDiskDriveHP
+			json.Unmarshal(driveResp, &raw)
+
+			// Build composite ID using sequential ID and controller port
+			// HP Location field is formatted as ControllerPort:Box:Bay (e.g. "1I:3:4")
+			// We use the sequential ID instead of physical bay number for consistency
+			compositeID := raw.ID
+			if raw.Location != "" {
+				locationParts := strings.Split(raw.Location, ":")
+				if len(locationParts) == 3 {
+					// locationParts[0]=ControllerPort (e.g., "1I", "2I")
+					compositeID = fmt.Sprintf("Disk.Bay.%s:ControllerPort.%s:ArrayController.%s", raw.ID, locationParts[0], controllerNum)
+				}
+			}
+
+			capacityBytes := int(raw.CapacityLogicalBlocks * raw.BlockSizeBytes)
+			drive := StorageDriveDetailsDell{
+				ID:             compositeID,
+				Name:           raw.Name,
+				Description:    raw.Description,
+				BlockSizeBytes: int(raw.BlockSizeBytes),
+				CapacityBytes:  capacityBytes,
+				MediaType:      raw.MediaType,
+				Model:          raw.Model,
+				PartNumber:     "",
+				Revision:       raw.FirmwareVersion.Current.VersionString,
+				Manufacturer:   "",
+			}
+			drive.Status.Health = raw.Status.Health
+			drive.Status.State = raw.Status.State
+
+			_drives = append(_drives, drive)
+		}
+	}
+
+	return _drives, nil
 }
 
 // GetEthernetInterfacesHP ... will fetch the EthernetInterfaces Details
