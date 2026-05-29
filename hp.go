@@ -94,84 +94,40 @@ func (c *IloClient) CheckLoginHP() (string, error) {
 
 // GetFirmwareHP ... will fetch the Firmware details
 func (c *IloClient) GetFirmwareHP() ([]FirmwareData, error) {
-
-	url := c.Hostname + "/redfish/v1/Systems/1/FirmwareInventory/"
+	url := c.Hostname + "/redfish/v1/UpdateService/FirmwareInventory"
 	resp, _, _, err := queryData(c, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 	var (
-		x         FirmwareInventoryHP
+		x         MemberCountHP
 		_firmdata []FirmwareData
 	)
 	json.Unmarshal(resp, &x)
 
-	for i := range x.Current.One03c3239103c21c0 {
-		_result := FirmwareData{
-			Id:         x.Current.One03c3239103c21c0[i].Key,
-			Name:       x.Current.One03c3239103c21c0[i].Name,
-			Updateable: x.Current.One03c3239103c21c0[i].Updateable,
-			Version:    x.Current.One03c3239103c21c0[i].VersionString,
+	for i := range x.Members {
+		_url := c.Hostname + x.Members[i].OdataId
+		resp, _, _, err := queryData(c, "GET", _url, nil)
+		if err != nil {
+			return nil, err
 		}
-		_firmdata = append(_firmdata, _result)
-	}
 
-	for i := range x.Current.One4e41657103c22be {
-		_result := FirmwareData{
-			Id:         x.Current.One4e41657103c22be[i].Key,
-			Name:       x.Current.One4e41657103c22be[i].Name,
-			Updateable: x.Current.One4e41657103c22be[i].Updateable,
-			Version:    x.Current.One4e41657103c22be[i].VersionString,
+		var y FirmwareDataHP
+
+		json.Unmarshal(resp, &y)
+
+		deviceContext := y.Oem.Hpe.DeviceContext
+		if deviceContext == "" {
+			deviceContext = y.Name
 		}
-		_firmdata = append(_firmdata, _result)
-	}
+		deviceContext = strings.ReplaceAll(deviceContext, " ", ".")
+		firmwareID := fmt.Sprintf("Installed-%s-%s__%s", y.ID, y.Version, deviceContext)
 
-	for i := range x.Current.Eight08610fb103c17d0 {
 		_result := FirmwareData{
-			Id:         x.Current.Eight08610fb103c17d0[i].Key,
-			Name:       x.Current.Eight08610fb103c17d0[i].Name,
-			Updateable: x.Current.Eight08610fb103c17d0[i].Updateable,
-			Version:    x.Current.Eight08610fb103c17d0[i].VersionString,
-		}
-		_firmdata = append(_firmdata, _result)
-	}
-
-	for i := range x.Current.Eight08610fb103c17d3 {
-		_result := FirmwareData{
-			Id:         x.Current.Eight08610fb103c17d3[i].Key,
-			Name:       x.Current.Eight08610fb103c17d3[i].Name,
-			Updateable: x.Current.Eight08610fb103c17d3[i].Updateable,
-			Version:    x.Current.Eight08610fb103c17d3[i].VersionString,
-		}
-		_firmdata = append(_firmdata, _result)
-	}
-
-	for i := range x.Current.SystemBMC {
-		_result := FirmwareData{
-			Id:         x.Current.SystemBMC[i].Key,
-			Name:       x.Current.SystemBMC[i].Name,
-			Updateable: false, //Adding False as default because of redfish have no field
-			Version:    x.Current.SystemBMC[i].VersionString,
-		}
-		_firmdata = append(_firmdata, _result)
-	}
-
-	for i := range x.Current.SystemRomActive {
-		_result := FirmwareData{
-			Id:         x.Current.SystemRomActive[i].Key,
-			Name:       x.Current.SystemRomActive[i].Name,
-			Updateable: false, //Adding False as default because of redfish have no field
-			Version:    x.Current.SystemRomActive[i].VersionString,
-		}
-		_firmdata = append(_firmdata, _result)
-	}
-
-	for i := range x.Current.SystemRomBackup {
-		_result := FirmwareData{
-			Id:         x.Current.SystemRomBackup[i].Key,
-			Name:       x.Current.SystemRomBackup[i].Name,
-			Updateable: false, //Adding False as default because of redfish have no field
-			Version:    x.Current.SystemRomBackup[i].VersionString,
+			Id:         firmwareID,
+			Name:       y.Name,
+			Updateable: y.Updateable,
+			Version:    y.Version,
 		}
 		_firmdata = append(_firmdata, _result)
 	}

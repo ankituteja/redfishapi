@@ -1980,6 +1980,27 @@ type FirmwareDataDell struct {
 	Version    string `json:"Version"`
 }
 
+// FirmwareDataHP ...
+type FirmwareDataHP struct {
+	OdataContext string `json:"@odata.context"`
+	OdataEtag    string `json:"@odata.etag"`
+	OdataID      string `json:"@odata.id"`
+	OdataType    string `json:"@odata.type"`
+	ID           string `json:"Id"`
+	Description  string `json:"Description"`
+	Name         string `json:"Name"`
+	Oem          struct {
+		Hpe struct {
+			OdataContext string      `json:"@odata.context"`
+			OdataType    string      `json:"@odata.type"`
+			DeviceClass  interface{} `json:"DeviceClass"`
+			DeviceContext string     `json:"DeviceContext"`
+		} `json:"Hpe"`
+	} `json:"Oem"`
+	Updateable bool   `json:"Updateable"`
+	Version    string `json:"Version"`
+}
+
 // PowerDataDell ...
 type PowerDataDell struct {
 	_odata_context string
