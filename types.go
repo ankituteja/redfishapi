@@ -4149,6 +4149,21 @@ type SystemData struct {
 	ProcessorFamily string  `json:"processor_family"`
 }
 
+// MemoryCollectionHP ... HP memory collection response
+type MemoryCollectionHP struct {
+	Oem struct {
+		Hpe struct {
+			MemoryList []struct {
+				BoardOperationalFrequency int64 `json:"BoardOperationalFrequency"`
+				BoardTotalMemorySize      int64 `json:"BoardTotalMemorySize"`
+			} `json:"MemoryList"`
+		} `json:"Hpe"`
+	} `json:"Oem"`
+	Members []struct {
+		OdataId string `json:"@odata.id"`
+	} `json:"Members"`
+}
+
 // FirmwareData ...
 type FirmwareData struct {
 	Name       string `json:"name"`
