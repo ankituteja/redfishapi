@@ -3,6 +3,7 @@ package redfishapi
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 // StartServerHP ...
@@ -49,9 +50,13 @@ func (c *IloClient) GetSystemInfoHP() (SystemData, error) {
 	var x SystemInfoHP
 
 	json.Unmarshal(resp, &x)
+	totalMemoryGB := x.Memory.TotalSystemMemoryGB
+	if totalMemoryGB <= 0 && x.MemorySummary.TotalSystemMemoryGiB > 0 {
+		totalMemoryGB = x.MemorySummary.TotalSystemMemoryGiB
+	}
 
 	_result := SystemData{Health: x.Status.Health,
-		Memory:          x.Memory.TotalSystemMemoryGB,
+		Memory:          totalMemoryGB,
 		Model:           x.Model,
 		PowerState:      x.PowerState,
 		Processors:      x.ProcessorSummary.Count,
@@ -61,6 +66,21 @@ func (c *IloClient) GetSystemInfoHP() (SystemData, error) {
 
 	return _result, nil
 
+}
+// GetSystemMemoryInfoHP ... will fetch raw memory collection details
+func (c *IloClient) GetSystemMemoryInfoHP() (MemoryCollectionHP, error) {
+	url := c.Hostname + "/redfish/v1/Systems/1/Memory/"
+	resp, _, _, err := queryData(c, "GET", url, nil)
+	if err != nil {
+		return MemoryCollectionHP{}, err
+	}
+
+	var collection MemoryCollectionHP
+	if err := json.Unmarshal(resp, &collection); err != nil {
+		return MemoryCollectionHP{}, err
+	}
+
+	return collection, nil
 }
 
 // GetServerPowerStateHP ... Will fetch the current state of the Server
@@ -93,84 +113,40 @@ func (c *IloClient) CheckLoginHP() (string, error) {
 
 // GetFirmwareHP ... will fetch the Firmware details
 func (c *IloClient) GetFirmwareHP() ([]FirmwareData, error) {
-
-	url := c.Hostname + "/redfish/v1/Systems/1/FirmwareInventory/"
+	url := c.Hostname + "/redfish/v1/UpdateService/FirmwareInventory"
 	resp, _, _, err := queryData(c, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 	var (
-		x         FirmwareInventoryHP
+		x         MemberCountHP
 		_firmdata []FirmwareData
 	)
 	json.Unmarshal(resp, &x)
 
-	for i := range x.Current.One03c3239103c21c0 {
-		_result := FirmwareData{
-			Id:         x.Current.One03c3239103c21c0[i].Key,
-			Name:       x.Current.One03c3239103c21c0[i].Name,
-			Updateable: x.Current.One03c3239103c21c0[i].Updateable,
-			Version:    x.Current.One03c3239103c21c0[i].VersionString,
+	for i := range x.Members {
+		_url := c.Hostname + x.Members[i].OdataId
+		resp, _, _, err := queryData(c, "GET", _url, nil)
+		if err != nil {
+			return nil, err
 		}
-		_firmdata = append(_firmdata, _result)
-	}
 
-	for i := range x.Current.One4e41657103c22be {
-		_result := FirmwareData{
-			Id:         x.Current.One4e41657103c22be[i].Key,
-			Name:       x.Current.One4e41657103c22be[i].Name,
-			Updateable: x.Current.One4e41657103c22be[i].Updateable,
-			Version:    x.Current.One4e41657103c22be[i].VersionString,
+		var y FirmwareDataHP
+
+		json.Unmarshal(resp, &y)
+
+		deviceContext := y.Oem.Hpe.DeviceContext
+		if deviceContext == "" {
+			deviceContext = y.Name
 		}
-		_firmdata = append(_firmdata, _result)
-	}
+		deviceContext = strings.ReplaceAll(deviceContext, " ", ".")
+		firmwareID := fmt.Sprintf("Installed-%s-%s__%s", y.ID, y.Version, deviceContext)
 
-	for i := range x.Current.Eight08610fb103c17d0 {
 		_result := FirmwareData{
-			Id:         x.Current.Eight08610fb103c17d0[i].Key,
-			Name:       x.Current.Eight08610fb103c17d0[i].Name,
-			Updateable: x.Current.Eight08610fb103c17d0[i].Updateable,
-			Version:    x.Current.Eight08610fb103c17d0[i].VersionString,
-		}
-		_firmdata = append(_firmdata, _result)
-	}
-
-	for i := range x.Current.Eight08610fb103c17d3 {
-		_result := FirmwareData{
-			Id:         x.Current.Eight08610fb103c17d3[i].Key,
-			Name:       x.Current.Eight08610fb103c17d3[i].Name,
-			Updateable: x.Current.Eight08610fb103c17d3[i].Updateable,
-			Version:    x.Current.Eight08610fb103c17d3[i].VersionString,
-		}
-		_firmdata = append(_firmdata, _result)
-	}
-
-	for i := range x.Current.SystemBMC {
-		_result := FirmwareData{
-			Id:         x.Current.SystemBMC[i].Key,
-			Name:       x.Current.SystemBMC[i].Name,
-			Updateable: false, //Adding False as default because of redfish have no field
-			Version:    x.Current.SystemBMC[i].VersionString,
-		}
-		_firmdata = append(_firmdata, _result)
-	}
-
-	for i := range x.Current.SystemRomActive {
-		_result := FirmwareData{
-			Id:         x.Current.SystemRomActive[i].Key,
-			Name:       x.Current.SystemRomActive[i].Name,
-			Updateable: false, //Adding False as default because of redfish have no field
-			Version:    x.Current.SystemRomActive[i].VersionString,
-		}
-		_firmdata = append(_firmdata, _result)
-	}
-
-	for i := range x.Current.SystemRomBackup {
-		_result := FirmwareData{
-			Id:         x.Current.SystemRomBackup[i].Key,
-			Name:       x.Current.SystemRomBackup[i].Name,
-			Updateable: false, //Adding False as default because of redfish have no field
-			Version:    x.Current.SystemRomBackup[i].VersionString,
+			Id:         firmwareID,
+			Name:       y.Name,
+			Updateable: y.Updateable,
+			Version:    y.Version,
 		}
 		_firmdata = append(_firmdata, _result)
 	}
@@ -408,177 +384,62 @@ func (c *IloClient) GetSystemEventLogsHP() ([]SystemEventLogRes, error) {
 
 }
 
-// GetBiosDataHP ... will fetch the Bios Details
-func (c *IloClient) GetBiosDataHP() (BiosDataHP, error) {
+// GetBiosDataHP ... will fetch BIOS settings and enrich with system memory/model, memory frequency, and processor brand/core details
+func (c *IloClient) GetBiosDataHP() (BiosAttributesData, error) {
 
 	url := c.Hostname + "/redfish/v1/systems/1/bios/settings/"
 
 	resp, _, _, err := queryData(c, "GET", url, nil)
 	if err != nil {
-		return BiosDataHP{}, err
+		return BiosAttributesData{}, err
 	}
 
 	var x BiosAttrHP
 
-	json.Unmarshal(resp, &x)
-
-	_BiosData := BiosDataHP{
-		AcpiRootBridgePxm:            x.AcpiRootBridgePxm,
-		AcpiSlit:                     x.AcpiSlit,
-		AdjSecPrefetch:               x.AdjSecPrefetch,
-		AdminEmail:                   x.AdminEmail,
-		AdminName:                    x.AdminName,
-		AdminOtherInfo:               x.AdminOtherInfo,
-		AdminPhone:                   x.AdminPhone,
-		AdvancedMemProtection:        x.AdvancedMemProtection,
-		AsrStatus:                    x.AsrStatus,
-		AsrTimeoutMinutes:            x.AsrTimeoutMinutes,
-		AssetTagProtection:           x.AssetTagProtection,
-		AutoPowerOn:                  x.AutoPowerOn,
-		BootMode:                     x.BootMode,
-		BootOrderPolicy:              x.BootOrderPolicy,
-		ChannelInterleaving:          x.ChannelInterleaving,
-		CollabPowerControl:           x.CollabPowerControl,
-		ConsistentDevNaming:          x.ConsistentDevNaming,
-		CustomPostMessage:            x.CustomPostMessage,
-		DaylightSavingsTime:          x.DaylightSavingsTime,
-		DcuIPPrefetcher:              x.DcuIPPrefetcher,
-		DcuStreamPrefetcher:          x.DcuStreamPrefetcher,
-		Description:                  x.Description,
-		Dhcpv4:                       x.Dhcpv4,
-		DynamicPowerCapping:          x.DynamicPowerCapping,
-		DynamicPowerResponse:         x.DynamicPowerResponse,
-		EmbNicEnable:                 x.EmbNicEnable,
-		EmbSas1Boot:                  x.EmbSas1Boot,
-		EmbSasEnable:                 x.EmbSasEnable,
-		EmbSata1Enable:               x.EmbSata1Enable,
-		EmbSata2Enable:               x.EmbSata2Enable,
-		EmbVideoConnection:           x.EmbVideoConnection,
-		EmbeddedDiagnostics:          x.EmbeddedDiagnostics,
-		EmbeddedDiagsMode:            x.EmbeddedDiagsMode,
-		EmbeddedSata:                 x.EmbeddedSata,
-		EmbeddedSerialPort:           x.EmbeddedSerialPort,
-		EmbeddedUefiShell:            x.EmbeddedUefiShell,
-		EmbeddedUserPartition:        x.EmbeddedUserPartition,
-		EmsConsole:                   x.EmsConsole,
-		EnergyPerfBias:               x.EnergyPerfBias,
-		EraseUserDefaults:            x.EraseUserDefaults,
-		ExtendedAmbientTemp:          x.ExtendedAmbientTemp,
-		ExtendedMemTest:              x.ExtendedMemTest,
-		F11BootMenu:                  x.F11BootMenu,
-		FCScanPolicy:                 x.FCScanPolicy,
-		FanFailPolicy:                x.FanFailPolicy,
-		FanInstallReq:                x.FanInstallReq,
-		FlexLom1Enable:               x.FlexLom1Enable,
-		HwPrefetcher:                 x.HwPrefetcher,
-		IntelDmiLinkFreq:             x.IntelDmiLinkFreq,
-		IntelNicDmaChannels:          x.IntelNicDmaChannels,
-		IntelPerfMonitoring:          x.IntelPerfMonitoring,
-		IntelProcVtd:                 x.IntelProcVtd,
-		IntelQpiFreq:                 x.IntelQpiFreq,
-		IntelQpiLinkEn:               x.IntelQpiLinkEn,
-		IntelQpiPowerManagement:      x.IntelQpiPowerManagement,
-		IntelligentProvisioning:      x.IntelligentProvisioning,
-		InternalSDCardSlot:           x.InternalSDCardSlot,
-		IoNonPostedPrefetching:       x.IoNonPostedPrefetching,
-		Ipv4Address:                  x.Ipv4Address,
-		Ipv4Gateway:                  x.Ipv4Gateway,
-		Ipv4PrimaryDNS:               x.Ipv4PrimaryDNS,
-		Ipv4SecondaryDNS:             x.Ipv4SecondaryDNS,
-		Ipv4SubnetMask:               x.Ipv4SubnetMask,
-		Ipv6Duid:                     x.Ipv6Duid,
-		MaxMemBusFreqMHz:             x.MaxMemBusFreqMHz,
-		MaxPcieSpeed:                 x.MaxPcieSpeed,
-		MemFastTraining:              x.MemFastTraining,
-		MinProcIdlePkgState:          x.MinProcIdlePkgState,
-		MinProcIdlePower:             x.MinProcIdlePower,
-		MixedPowerSupplyReporting:    x.MixedPowerSupplyReporting,
-		Modified:                     x.Modified,
-		Name:                         x.Name,
-		NetworkBootRetry:             x.NetworkBootRetry,
-		NicBoot1:                     x.NicBoot1,
-		NicBoot2:                     x.NicBoot2,
-		NicBoot3:                     x.NicBoot3,
-		NicBoot4:                     x.NicBoot4,
-		NmiDebugButton:               x.NmiDebugButton,
-		NodeInterleaving:             x.NodeInterleaving,
-		NumaGroupSizeOpt:             x.NumaGroupSizeOpt,
-		PciBusPadding:                x.PciBusPadding,
-		PciSlot3Enable:               x.PciSlot3Enable,
-		PciSlot4Enable:               x.PciSlot4Enable,
-		PciSlot6Enable:               x.PciSlot6Enable,
-		PcieExpressEcrcSupport:       x.PcieExpressEcrcSupport,
-		PostF1Prompt:                 x.PostF1Prompt,
-		PowerButton:                  x.PowerButton,
-		PowerOnDelay:                 x.PowerOnDelay,
-		PowerOnLogo:                  x.PowerOnLogo,
-		PowerProfile:                 x.PowerProfile,
-		PowerRegulator:               x.PowerRegulator,
-		PreBootNetwork:               x.PreBootNetwork,
-		ProcAes:                      x.ProcAes,
-		ProcCoreDisable:              x.ProcCoreDisable,
-		ProcHyperthreading:           x.ProcHyperthreading,
-		ProcNoExecute:                x.ProcNoExecute,
-		ProcTurbo:                    x.ProcTurbo,
-		ProcVirtualization:           x.ProcVirtualization,
-		ProcX2Apic:                   x.ProcX2Apic,
-		ProductID:                    x.ProductID,
-		QpiBandwidthOpt:              x.QpiBandwidthOpt,
-		QpiSnoopConfig:               x.QpiSnoopConfig,
-		RedundantPowerSupply:         x.RedundantPowerSupply,
-		RemovableFlashBootSeq:        x.RemovableFlashBootSeq,
-		RestoreDefaults:              x.RestoreDefaults,
-		RestoreManufacturingDefaults: x.RestoreManufacturingDefaults,
-		RomSelection:                 x.RomSelection,
-		SataSecureErase:              x.SataSecureErase,
-		SaveUserDefaults:             x.SaveUserDefaults,
-		SecureBootStatus:             x.SecureBootStatus,
-		SerialConsoleBaudRate:        x.SerialConsoleBaudRate,
-		SerialConsoleEmulation:       x.SerialConsoleEmulation,
-		SerialConsolePort:            x.SerialConsolePort,
-		SerialNumber:                 x.SerialNumber,
-		ServerAssetTag:               x.ServerAssetTag,
-		ServerName:                   x.ServerName,
-		ServerOtherInfo:              x.ServerOtherInfo,
-		ServerPrimaryOs:              x.ServerPrimaryOs,
-		ServiceEmail:                 x.ServiceEmail,
-		ServiceName:                  x.ServiceName,
-		ServiceOtherInfo:             x.ServiceOtherInfo,
-		ServicePhone:                 x.ServicePhone,
-		Slot3NicBoot1:                x.Slot3NicBoot1,
-		Slot3NicBoot2:                x.Slot3NicBoot2,
-		Slot4NicBoot1:                x.Slot4NicBoot1,
-		Slot4NicBoot2:                x.Slot4NicBoot2,
-		Slot6NicBoot1:                x.Slot6NicBoot1,
-		Slot6NicBoot2:                x.Slot6NicBoot2,
-		Sriov:                        x.Sriov,
-		ThermalConfig:                x.ThermalConfig,
-		ThermalShutdown:              x.ThermalShutdown,
-		TimeFormat:                   x.TimeFormat,
-		TimeZone:                     x.TimeZone,
-		TpmState:                     x.TpmState,
-		TpmType:                      x.TpmType,
-		Type:                         x.Type,
-		UefiOptimizedBoot:            x.UefiOptimizedBoot,
-		UefiPxeBoot:                  x.UefiPxeBoot,
-		UefiShellBootOrder:           x.UefiShellBootOrder,
-		UefiShellStartup:             x.UefiShellStartup,
-		UefiShellStartupLocation:     x.UefiShellStartupLocation,
-		UefiShellStartupURL:          x.UefiShellStartupURL,
-		URLBootFile:                  x.URLBootFile,
-		Usb3Mode:                     x.Usb3Mode,
-		UsbBoot:                      x.UsbBoot,
-		UsbControl:                   x.UsbControl,
-		UtilityLang:                  x.UtilityLang,
-		VirtualInstallDisk:           x.VirtualInstallDisk,
-		VirtualSerialPort:            x.VirtualSerialPort,
-		VlanControl:                  x.VlanControl,
-		VlanID:                       x.VlanID,
-		VlanPriority:                 x.VlanPriority,
-		WakeOnLan:                    x.WakeOnLan,
+	err = json.Unmarshal(resp, &x)
+	if err != nil {
+		return BiosAttributesData{}, err
 	}
 
-	return _BiosData, nil
+	y := BiosAttributesData{
+		BootMode:          x.BootMode,
+		BootSeqRetry:      x.NetworkBootRetry,
+		InternalUsb:       x.UsbControl,
+		SriovGlobalEnable: x.Sriov,
+		SysProfile:        x.PowerProfile,
+		AcPwrRcvry:        x.AutoPowerOn,
+		AcPwrRcvryDelay:   x.PowerOnDelay,
+		SystemServiceTag:  x.SerialNumber,
+	}
+
+	// Enrich BIOS data with system memory speed, size, model, and processor details
+	if memoryCollection, memErr := c.GetSystemMemoryInfoHP(); memErr == nil {
+		if len(memoryCollection.Oem.Hpe.MemoryList) > 0 {
+			y.SysMemSpeed = fmt.Sprintf("%d MHz", memoryCollection.Oem.Hpe.MemoryList[0].BoardOperationalFrequency)
+		}
+	}
+
+	if sysInfo, sysErr := c.GetSystemInfoHP(); sysErr == nil {
+		if sysInfo.Memory > 0 {
+			y.SysMemSize = fmt.Sprintf("%.0f GB", sysInfo.Memory)
+		}
+		if sysInfo.Model != "" {
+			y.SystemModelName = sysInfo.Model
+		}
+	}
+
+	if processors, procErr := c.GetProcessorInfoHP(); procErr == nil {
+		if len(processors) > 0 {
+			y.Proc1Brand = processors[0].Model
+			y.Proc1NumCores = int(processors[0].TotalCores)
+		}
+		if len(processors) > 1 {
+			y.Proc2Brand = processors[1].Model
+			y.Proc2NumCores = int(processors[1].TotalCores)
+		}
+	}
+
+	return y, nil
 }
 
 // GetLicenseInfoHP ... will fetch the current License Details
@@ -630,6 +491,176 @@ func (c *IloClient) GetPCISlotsHp() ([]PCISlotsInfo, error) {
 
 	return _pciSlots, nil
 
+}
+
+// GetStorageRaidHP ... will fetch HP SmartStorage logical drive details
+func (c *IloClient) GetStorageRaidHP() ([]StorageRaidDetailsDell, error) {
+	url := c.Hostname + "/redfish/v1/Systems/1/SmartStorage/ArrayControllers/"
+	resp, _, _, err := queryData(c, "GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var controllers MemberCountHP
+	json.Unmarshal(resp, &controllers)
+
+	var _raiddata []StorageRaidDetailsDell
+	for i := range controllers.Members {
+		controllerID := strings.TrimSuffix(controllers.Members[i].OdataId, "/")
+		controllerNum := controllerID[strings.LastIndex(controllerID, "/")+1:]
+		logicalDrivesURL := c.Hostname + controllerID + "/LogicalDrives/"
+		logicalDrivesResp, _, _, err := queryData(c, "GET", logicalDrivesURL, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		var logicalCollection MemberCountHP
+		json.Unmarshal(logicalDrivesResp, &logicalCollection)
+
+		for j := range logicalCollection.Members {
+			logicalDriveURL := c.Hostname + logicalCollection.Members[j].OdataId
+			logicalDriveResp, _, _, err := queryData(c, "GET", logicalDriveURL, nil)
+			if err != nil {
+				return nil, err
+			}
+
+			var ld SmartStorageLogicalDriveHP
+			json.Unmarshal(logicalDriveResp, &ld)
+
+			layout := ld.RAIDType
+			if layout == "" {
+				layout = ld.Raid
+			}
+			if layout == "" {
+				layout = ld.FaultTolerance
+			}
+
+			capacityBytes := ""
+			if ld.CapacityBytes > 0 {
+				capacityBytes = fmt.Sprintf("%d", ld.CapacityBytes)
+			} else if ld.CapacityMiB > 0 {
+				capacityBytes = fmt.Sprintf("%d", ld.CapacityMiB*1024*1024)
+			} else if ld.CapacityGB > 0 {
+				capacityBytes = fmt.Sprintf("%d", ld.CapacityGB*1000*1000*1000)
+			}
+
+			drivesCount := ""
+			if ld.Links.DataDrivesCount > 0 {
+				drivesCount = fmt.Sprintf("%d", ld.Links.DataDrivesCount)
+			} else if ld.Links.DataDrives.OdataID != "" {
+				dataDrivesURL := c.Hostname + ld.Links.DataDrives.OdataID
+				dataDrivesResp, _, _, err := queryData(c, "GET", dataDrivesURL, nil)
+				if err == nil {
+					var dataDrivesCollection MemberCountHP
+					json.Unmarshal(dataDrivesResp, &dataDrivesCollection)
+					drivesCount = fmt.Sprintf("%d", len(dataDrivesCollection.Members))
+				}
+			}
+
+			stripeSize := ld.StripeSize
+			if stripeSize == "" && ld.StripeSizeBytes > 0 {
+				stripeSize = fmt.Sprintf("%d", ld.StripeSizeBytes)
+			}
+			if stripeSize == "" && ld.StripSizeBytes > 0 {
+				stripeSize = fmt.Sprintf("%d", ld.StripSizeBytes)
+			}
+
+			raidName := ld.Name
+			if ld.LogicalDriveName != "" {
+				raidName = ld.LogicalDriveName
+			}
+
+			// Build composite ID: LogicalDrive.<id>:ArrayController.<controllerNum>
+			compositeID := fmt.Sprintf("LogicalDrive.%s:ArrayController.%s", ld.ID, controllerNum)
+
+			raidDevice := StorageRaidDetailsDell{
+				Name:             raidName,
+				Id:               compositeID,
+				Layout:           layout,
+				MediaType:        ld.MediaType,
+				DrivesCount:      drivesCount,
+				ReadCachePolicy:  ld.ReadCachePolicy,
+				CapacityBytes:    capacityBytes,
+				StripeSize:       stripeSize,
+				WriteCachePolicy: ld.WriteCachePolicy,
+			}
+
+			_raiddata = append(_raiddata, raidDevice)
+		}
+	}
+
+	return _raiddata, nil
+}
+
+// GetStorageDriveDetailsHP ... will fetch disk drive details from all SmartStorage array controllers
+// and map them to the same return type used by Dell storage drive details.
+func (c *IloClient) GetStorageDriveDetailsHP() ([]StorageDriveDetailsDell, error) {
+	url := c.Hostname + "/redfish/v1/Systems/1/SmartStorage/ArrayControllers/"
+	resp, _, _, err := queryData(c, "GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var controllers MemberCountHP
+	json.Unmarshal(resp, &controllers)
+
+	var _drives []StorageDriveDetailsDell
+	for i := range controllers.Members {
+		controllerID := strings.TrimSuffix(controllers.Members[i].OdataId, "/")
+		drivesURL := c.Hostname + controllerID + "/DiskDrives/"
+		drivesResp, _, _, err := queryData(c, "GET", drivesURL, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		var driveCollection MemberCountHP
+		json.Unmarshal(drivesResp, &driveCollection)
+
+		controllerNum := controllerID[strings.LastIndex(controllerID, "/")+1:]
+
+		for j := range driveCollection.Members {
+			driveURL := c.Hostname + driveCollection.Members[j].OdataId
+			driveResp, _, _, err := queryData(c, "GET", driveURL, nil)
+			if err != nil {
+				return nil, err
+			}
+
+			var raw SmartStorageDiskDriveHP
+			json.Unmarshal(driveResp, &raw)
+
+			// Build composite ID using sequential ID and controller port
+			// HP Location field is formatted as ControllerPort:Box:Bay (e.g. "1I:3:4")
+			// We use the sequential ID instead of physical bay number for consistency
+			compositeID := raw.ID
+			if raw.Location != "" {
+				locationParts := strings.Split(raw.Location, ":")
+				if len(locationParts) == 3 {
+					// locationParts[0]=ControllerPort (e.g., "1I", "2I")
+					compositeID = fmt.Sprintf("Disk.Bay.%s:ControllerPort.%s:ArrayController.%s", raw.ID, locationParts[0], controllerNum)
+				}
+			}
+
+			capacityBytes := int(raw.CapacityLogicalBlocks * raw.BlockSizeBytes)
+			drive := StorageDriveDetailsDell{
+				ID:             compositeID,
+				Name:           raw.Name,
+				Description:    raw.Description,
+				BlockSizeBytes: int(raw.BlockSizeBytes),
+				CapacityBytes:  capacityBytes,
+				MediaType:      raw.MediaType,
+				Model:          raw.Model,
+				PartNumber:     "",
+				Revision:       raw.FirmwareVersion.Current.VersionString,
+				Manufacturer:   "",
+			}
+			drive.Status.Health = raw.Status.Health
+			drive.Status.State = raw.Status.State
+
+			_drives = append(_drives, drive)
+		}
+	}
+
+	return _drives, nil
 }
 
 // GetEthernetInterfacesHP ... will fetch the EthernetInterfaces Details

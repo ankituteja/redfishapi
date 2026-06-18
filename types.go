@@ -1980,6 +1980,27 @@ type FirmwareDataDell struct {
 	Version    string `json:"Version"`
 }
 
+// FirmwareDataHP ...
+type FirmwareDataHP struct {
+	OdataContext string `json:"@odata.context"`
+	OdataEtag    string `json:"@odata.etag"`
+	OdataID      string `json:"@odata.id"`
+	OdataType    string `json:"@odata.type"`
+	ID           string `json:"Id"`
+	Description  string `json:"Description"`
+	Name         string `json:"Name"`
+	Oem          struct {
+		Hpe struct {
+			OdataContext string      `json:"@odata.context"`
+			OdataType    string      `json:"@odata.type"`
+			DeviceClass  interface{} `json:"DeviceClass"`
+			DeviceContext string     `json:"DeviceContext"`
+		} `json:"Hpe"`
+	} `json:"Oem"`
+	Updateable bool   `json:"Updateable"`
+	Version    string `json:"Version"`
+}
+
 // PowerDataDell ...
 type PowerDataDell struct {
 	_odata_context string
@@ -3691,6 +3712,90 @@ type LicenseInfoHP struct {
 	} `json:"links"`
 }
 
+// SmartStorageDiskDriveHP ... raw disk drive response from HP SmartStorage
+type SmartStorageDiskDriveHP struct {
+	OdataContext string `json:"@odata.context"`
+	OdataEtag    string `json:"@odata.etag"`
+	OdataID      string `json:"@odata.id"`
+	OdataType    string `json:"@odata.type"`
+	ID           string `json:"Id"`
+	Name         string `json:"Name"`
+	Description  string `json:"Description"`
+
+	BlockSizeBytes        int64  `json:"BlockSizeBytes"`
+	CapacityGB            int64  `json:"CapacityGB"`
+	CapacityLogicalBlocks int64  `json:"CapacityLogicalBlocks"`
+	CapacityMiB           int64  `json:"CapacityMiB"`
+
+	CarrierApplicationVersion   string `json:"CarrierApplicationVersion"`
+	CarrierAuthenticationStatus string `json:"CarrierAuthenticationStatus"`
+	CurrentTemperatureCelsius   int    `json:"CurrentTemperatureCelsius"`
+	MaximumTemperatureCelsius   int    `json:"MaximumTemperatureCelsius"`
+
+	DiskDriveStatusReasons []string `json:"DiskDriveStatusReasons"`
+	DiskDriveUse           string   `json:"DiskDriveUse"`
+	EncryptedDrive         bool     `json:"EncryptedDrive"`
+
+	FirmwareVersion struct {
+		Current struct {
+			VersionString string `json:"VersionString"`
+		} `json:"Current"`
+	} `json:"FirmwareVersion"`
+
+	InterfaceSpeedMbps  int    `json:"InterfaceSpeedMbps"`
+	InterfaceType       string `json:"InterfaceType"`
+	LegacyBootPriority  string `json:"LegacyBootPriority"`
+	Location            string `json:"Location"`
+	LocationFormat      string `json:"LocationFormat"`
+	MediaType           string `json:"MediaType"`
+	Model               string `json:"Model"`
+	PowerOnHours        int    `json:"PowerOnHours"`
+	SerialNumber        string `json:"SerialNumber"`
+
+	SSDEnduranceUtilizationPercentage int `json:"SSDEnduranceUtilizationPercentage"`
+	UncorrectedReadErrors             int `json:"UncorrectedReadErrors"`
+	UncorrectedWriteErrors            int `json:"UncorrectedWriteErrors"`
+
+	Status struct {
+		Health string `json:"Health"`
+		State  string `json:"State"`
+	} `json:"Status"`
+}
+
+// SmartStorageLogicalDriveHP ... raw logical drive response from HP SmartStorage
+type SmartStorageLogicalDriveHP struct {
+	OdataContext string `json:"@odata.context"`
+	OdataEtag    string `json:"@odata.etag"`
+	OdataID      string `json:"@odata.id"`
+	OdataType    string `json:"@odata.type"`
+	ID           string `json:"Id"`
+	Name         string `json:"Name"`
+	Description  string `json:"Description"`
+
+	CapacityBytes int64 `json:"CapacityBytes"`
+	CapacityGB    int64 `json:"CapacityGB"`
+	CapacityMiB   int64 `json:"CapacityMiB"`
+	LogicalDriveName string `json:"LogicalDriveName"`
+
+	RAIDType       string `json:"RAIDType"`
+	Raid           string `json:"Raid"`
+	FaultTolerance string `json:"FaultTolerance"`
+
+	MediaType        string `json:"MediaType"`
+	ReadCachePolicy  string `json:"ReadCachePolicy"`
+	WriteCachePolicy string `json:"WriteCachePolicy"`
+	StripeSize       string `json:"StripeSize"`
+	StripeSizeBytes  int64  `json:"StripeSizeBytes"`
+	StripSizeBytes   int64  `json:"StripSizeBytes"`
+
+	Links struct {
+		DataDrives struct {
+			OdataID string `json:"@odata.id"`
+		} `json:"DataDrives"`
+		DataDrivesCount int `json:"DataDrives@odata.count"`
+	} `json:"Links"`
+}
+
 // PCISlotsInfoHp ... PCI Slots Details from the Redfish API
 type PCISlotsInfoHP struct {
 	OdataContext string
@@ -4042,6 +4147,21 @@ type SystemData struct {
 	Memory          float32 `json:"memory"`
 	Processors      int     `json:"processors"`
 	ProcessorFamily string  `json:"processor_family"`
+}
+
+// MemoryCollectionHP ... HP memory collection response
+type MemoryCollectionHP struct {
+	Oem struct {
+		Hpe struct {
+			MemoryList []struct {
+				BoardOperationalFrequency int64 `json:"BoardOperationalFrequency"`
+				BoardTotalMemorySize      int64 `json:"BoardTotalMemorySize"`
+			} `json:"MemoryList"`
+		} `json:"Hpe"`
+	} `json:"Oem"`
+	Members []struct {
+		OdataId string `json:"@odata.id"`
+	} `json:"Members"`
 }
 
 // FirmwareData ...
