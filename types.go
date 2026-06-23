@@ -1991,10 +1991,10 @@ type FirmwareDataHP struct {
 	Name         string `json:"Name"`
 	Oem          struct {
 		Hpe struct {
-			OdataContext string      `json:"@odata.context"`
-			OdataType    string      `json:"@odata.type"`
-			DeviceClass  interface{} `json:"DeviceClass"`
-			DeviceContext string     `json:"DeviceContext"`
+			OdataContext  string      `json:"@odata.context"`
+			OdataType     string      `json:"@odata.type"`
+			DeviceClass   interface{} `json:"DeviceClass"`
+			DeviceContext string      `json:"DeviceContext"`
 		} `json:"Hpe"`
 	} `json:"Oem"`
 	Updateable bool   `json:"Updateable"`
@@ -2951,25 +2951,28 @@ type MemberCountHP struct {
 // ThermalHealthListHP ...
 type ThermalHealthListHP struct {
 	OdataContext string `json:"@odata.context"`
+	OdataEtag    string `json:"@odata.etag"`
 	OdataID      string `json:"@odata.id"`
 	OdataType    string `json:"@odata.type"`
+	ID           string `json:"Id"`
 	Fans         []struct {
-		CurrentReading int    `json:"CurrentReading"`
-		FanName        string `json:"FanName"`
-		Oem            struct {
+		OdataID string `json:"@odata.id"`
+		Name    string `json:"Name"`
+		Oem     struct {
 			Hp struct {
 				_odata_type string
 				Location    string `json:"Location"`
 				Type        string `json:"Type"`
 			} `json:"Hp"`
 		} `json:"Oem"`
-		Status struct {
+		Reading      int    `json:"Reading"`
+		ReadingUnits string `json:"ReadingUnits"`
+		Status       struct {
 			Health string `json:"Health"`
 			State  string `json:"State"`
 		} `json:"Status"`
 		Units string `json:"Units"`
 	} `json:"Fans"`
-	ID           string `json:"Id"`
 	Name         string `json:"Name"`
 	Temperatures []struct {
 		CurrentReading int    `json:"CurrentReading"`
@@ -3094,6 +3097,10 @@ type PowerDataHP struct {
 		RedundancySet   []struct {
 			_odata_id string
 		} `json:"RedundancySet"`
+		Status struct {
+			Health string `json:"Health"`
+			State  string `json:"State"`
+		} `json:"Status"`
 	} `json:"Redundancy"`
 	Type  string `json:"Type"`
 	Links struct {
@@ -3722,10 +3729,10 @@ type SmartStorageDiskDriveHP struct {
 	Name         string `json:"Name"`
 	Description  string `json:"Description"`
 
-	BlockSizeBytes        int64  `json:"BlockSizeBytes"`
-	CapacityGB            int64  `json:"CapacityGB"`
-	CapacityLogicalBlocks int64  `json:"CapacityLogicalBlocks"`
-	CapacityMiB           int64  `json:"CapacityMiB"`
+	BlockSizeBytes        int64 `json:"BlockSizeBytes"`
+	CapacityGB            int64 `json:"CapacityGB"`
+	CapacityLogicalBlocks int64 `json:"CapacityLogicalBlocks"`
+	CapacityMiB           int64 `json:"CapacityMiB"`
 
 	CarrierApplicationVersion   string `json:"CarrierApplicationVersion"`
 	CarrierAuthenticationStatus string `json:"CarrierAuthenticationStatus"`
@@ -3742,15 +3749,15 @@ type SmartStorageDiskDriveHP struct {
 		} `json:"Current"`
 	} `json:"FirmwareVersion"`
 
-	InterfaceSpeedMbps  int    `json:"InterfaceSpeedMbps"`
-	InterfaceType       string `json:"InterfaceType"`
-	LegacyBootPriority  string `json:"LegacyBootPriority"`
-	Location            string `json:"Location"`
-	LocationFormat      string `json:"LocationFormat"`
-	MediaType           string `json:"MediaType"`
-	Model               string `json:"Model"`
-	PowerOnHours        int    `json:"PowerOnHours"`
-	SerialNumber        string `json:"SerialNumber"`
+	InterfaceSpeedMbps int    `json:"InterfaceSpeedMbps"`
+	InterfaceType      string `json:"InterfaceType"`
+	LegacyBootPriority string `json:"LegacyBootPriority"`
+	Location           string `json:"Location"`
+	LocationFormat     string `json:"LocationFormat"`
+	MediaType          string `json:"MediaType"`
+	Model              string `json:"Model"`
+	PowerOnHours       int    `json:"PowerOnHours"`
+	SerialNumber       string `json:"SerialNumber"`
 
 	SSDEnduranceUtilizationPercentage int `json:"SSDEnduranceUtilizationPercentage"`
 	UncorrectedReadErrors             int `json:"UncorrectedReadErrors"`
@@ -3772,9 +3779,9 @@ type SmartStorageLogicalDriveHP struct {
 	Name         string `json:"Name"`
 	Description  string `json:"Description"`
 
-	CapacityBytes int64 `json:"CapacityBytes"`
-	CapacityGB    int64 `json:"CapacityGB"`
-	CapacityMiB   int64 `json:"CapacityMiB"`
+	CapacityBytes    int64  `json:"CapacityBytes"`
+	CapacityGB       int64  `json:"CapacityGB"`
+	CapacityMiB      int64  `json:"CapacityMiB"`
 	LogicalDriveName string `json:"LogicalDriveName"`
 
 	RAIDType       string `json:"RAIDType"`
@@ -3793,6 +3800,44 @@ type SmartStorageLogicalDriveHP struct {
 			OdataID string `json:"@odata.id"`
 		} `json:"DataDrives"`
 		DataDrivesCount int `json:"DataDrives@odata.count"`
+	} `json:"Links"`
+}
+
+// SmartStorageDriveHealthHP ... health of different storage view/link
+type SmartStorageDriveHealthHP struct {
+	OdataContext string `json:"@odata.context"`
+	OdataEtag    string `json:"@odata.etag"`
+	OdataID      string `json:"@odata.id"`
+	OdataType    string `json:"@odata.type"`
+	ID           string `json:"Id"`
+	Name         string `json:"Name"`
+	Description  string `json:"Description"`
+	Status       struct {
+		Health string `json:"Health"`
+		State  string `json:"State"`
+	} `json:"Status"`
+}
+
+// StorageControllerLinksHP ... links for storage controller
+type StorageControllerLinksHP struct {
+	OdataContext string `json:"@odata.context"`
+	OdataID      string `json:"@odata.id"`
+	OdataType    string `json:"@odata.type"`
+	Description  string `json:"Description"`
+	Name         string `json:"Name"`
+	Links        struct {
+		LogicalDrives struct {
+			OdataID string `json:"@odata.id"`
+		} `json:"LogicalDrives"`
+		PhysicalDrives struct {
+			OdataID string `json:"@odata.id"`
+		} `json:"PhysicalDrives"`
+		StorageEnclosures struct {
+			OdataID string `json:"@odata.id"`
+		} `json:"StorageEnclosures"`
+		UnconfiguredDrives struct {
+			OdataID string `json:"@odata.id"`
+		} `json:"UnconfiguredDrives"`
 	} `json:"Links"`
 }
 

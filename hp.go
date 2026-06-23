@@ -67,6 +67,7 @@ func (c *IloClient) GetSystemInfoHP() (SystemData, error) {
 	return _result, nil
 
 }
+
 // GetSystemMemoryInfoHP ... will fetch raw memory collection details
 func (c *IloClient) GetSystemMemoryInfoHP() (MemoryCollectionHP, error) {
 	url := c.Hostname + "/redfish/v1/Systems/1/Memory/"
@@ -170,7 +171,7 @@ func (c *IloClient) GetThermalHealthHP() ([]HealthList, error) {
 	json.Unmarshal(resp, &x)
 
 	for i := range x.Fans {
-		_result := HealthList{Name: x.Fans[i].FanName,
+		_result := HealthList{Name: x.Fans[i].Name,
 			Health: x.Fans[i].Status.Health,
 			State:  x.Fans[i].Status.State}
 		_health = append(_health, _result)
@@ -209,6 +210,14 @@ func (c *IloClient) GetPowerHealthHP() ([]HealthList, error) {
 		_health = append(_health, _result)
 	}
 
+	for i := range x.Redundancy {
+		_result := HealthList{
+			Name:   strings.ReplaceAll(x.Redundancy[i].Name, " ", "_"),
+			Health: x.Redundancy[i].Status.Health,
+			State:  x.PowerSupplies[i].Status.State}
+		_health = append(_health, _result)
+	}
+
 	return _health, nil
 }
 
@@ -235,6 +244,44 @@ func (c *IloClient) GetInterfaceHealthHP() ([]HealthList, error) {
 	}
 
 	return _health, nil
+}
+
+// GetSensorsHealthHP ... Will Fetch the Sensors Health Details
+func (c *IloClient) GetSensorsHealthHP() ([]HealthList, error) {
+
+	url := c.Hostname + "/redfish/v1/Chassis/1/Thermal/"
+
+	resp, _, _, err := queryData(c, "GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var (
+		x       ThermalHealthListHP
+		_health []HealthList
+	)
+
+	json.Unmarshal(resp, &x)
+
+	for i := range x.Fans {
+		_result := HealthList{
+			Name:   strings.ReplaceAll(x.Fans[i].Name, " ", "_"),
+			Health: x.Fans[i].Status.Health,
+			State:  x.Fans[i].Status.State}
+		_health = append(_health, _result)
+	}
+
+	// exclude Temperatures for now and consider them as part of
+	// thermal health.
+	// for i := range x.Temperatures {
+	// 	_result := HealthList{Name: x.Temperatures[i].Name,
+	// 		Health: x.Temperatures[i].Status.Health,
+	// 		State:  x.Temperatures[i].Status.State}
+	// 	_health = append(_health, _result)
+	// }
+
+	return _health, nil
+
 }
 
 // GetProcessorHealthHP ... will Fetch the Processor Health Details
@@ -299,7 +346,7 @@ func (c *IloClient) GetProcessorHealthHP() ([]HealthList, error) {
 		json.Unmarshal(resp, &y)
 
 		procHealth := HealthList{
-			Name:   y.ID,
+			Name:   y.ProcessorType + "_" + y.ID,
 			Health: y.Status.Health,
 			State:  y.Oem.Hp.ConfigStatus.State,
 		}
@@ -661,6 +708,71 @@ func (c *IloClient) GetStorageDriveDetailsHP() ([]StorageDriveDetailsDell, error
 	}
 
 	return _drives, nil
+}
+
+func (c *IloClient) GetStorageHealthHP() ([]StorageHealthList, error) {
+	url := c.Hostname + "/redfish/v1/Systems/1/SmartStorage/ArrayControllers/"
+	resp, _, _, err := queryData(c, "GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var (
+		controllers MemberCountHP
+		_healthdata []StorageHealthList
+	)
+
+	json.Unmarshal(resp, &controllers)
+
+	for i := range controllers.Members {
+		controllerID := strings.TrimSuffix(controllers.Members[i].OdataId, "/")
+		controllerURL := c.Hostname + controllerID
+		var singleCntrlr StorageControllerLinksHP
+		controllerResp, _, _, err := queryData(c, "GET", controllerURL, nil)
+		if err != nil {
+			return nil, err
+		}
+		json.Unmarshal(controllerResp, &singleCntrlr)
+
+		var storageViews []string
+		links := singleCntrlr.Links
+		storageViews = append(storageViews, links.LogicalDrives.OdataID)
+		storageViews = append(storageViews, links.PhysicalDrives.OdataID)
+		storageViews = append(storageViews, links.StorageEnclosures.OdataID)
+		storageViews = append(storageViews, links.UnconfiguredDrives.OdataID)
+
+		for _, drivesOdataID := range storageViews {
+			drivesURL := c.Hostname + drivesOdataID
+			drivesResp, _, _, err := queryData(c, "GET", drivesURL, nil)
+			if err != nil {
+				return nil, err
+			}
+
+			var driveCollection MemberCountHP
+			json.Unmarshal(drivesResp, &driveCollection)
+
+			for j := range driveCollection.Members {
+				driveURL := c.Hostname + driveCollection.Members[j].OdataId
+				driveResp, _, _, err := queryData(c, "GET", driveURL, nil)
+				if err != nil {
+					return nil, err
+				}
+
+				var rawHealth SmartStorageDriveHealthHP
+				json.Unmarshal(driveResp, &rawHealth)
+
+				storageHealth := StorageHealthList{
+					Name:   rawHealth.Name + "_" + rawHealth.ID,
+					Health: rawHealth.Status.Health,
+					State:  rawHealth.Status.State,
+					Space:  0,
+				}
+				_healthdata = append(_healthdata, storageHealth)
+			}
+		}
+	}
+
+	return _healthdata, nil
 }
 
 // GetEthernetInterfacesHP ... will fetch the EthernetInterfaces Details
