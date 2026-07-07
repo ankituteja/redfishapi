@@ -3323,6 +3323,7 @@ type ProcessorInfoHP struct {
 	Socket        string `json:"Socket"`
 	Status        struct {
 		Health string `json:"Health"`
+		State  string `json:"State"`
 	} `json:"Status"`
 	TotalCores   int64  `json:"TotalCores"`
 	TotalThreads int64  `json:"TotalThreads"`
@@ -4501,8 +4502,8 @@ type ThermalSensorDetailsDell struct {
 	} `json:"Thresholds"`
 }
 
-// ThermalHealthDetailsDell ... Struct for thermal health details
-type ThermalHealthDetailsDell struct {
+// ThermalHealthDetails ... Struct for thermal health details
+type ThermalHealthDetails struct {
 	Name          string      `json:"Name"`
 	Reading       float64     `json:"Reading"`
 	State         string      `json:"State"`
@@ -4511,4 +4512,5 @@ type ThermalHealthDetailsDell struct {
 	UpperCaution  interface{} `json:"UpperCaution"`
 	LowerCaution  interface{} `json:"LowerCaution"`
 	LowerCritical int         `json:"LowerCritical"`
+	ExtendedName  string      `json:"ExtendedName"`
 }

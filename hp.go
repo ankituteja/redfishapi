@@ -156,7 +156,7 @@ func (c *IloClient) GetFirmwareHP() ([]FirmwareData, error) {
 }
 
 // GetThermalHealthHP ... will fetch the Thermal Health
-func (c *IloClient) GetThermalHealthHP() ([]HealthList, error) {
+func (c *IloClient) GetThermalHealthHP() ([]ThermalHealthDetails, error) {
 	url := c.Hostname + "/redfish/v1/Chassis/1/Thermal/"
 	resp, _, _, err := queryData(c, "GET", url, nil)
 	if err != nil {
@@ -165,23 +165,47 @@ func (c *IloClient) GetThermalHealthHP() ([]HealthList, error) {
 
 	var (
 		x       ThermalHealthListHP
-		_health []HealthList
+		_health []ThermalHealthDetails
 	)
 
 	json.Unmarshal(resp, &x)
 
-	for i := range x.Fans {
-		_result := HealthList{Name: x.Fans[i].Name,
-			Health: x.Fans[i].Status.Health,
-			State:  x.Fans[i].Status.State}
-		_health = append(_health, _result)
-	}
-
 	for i := range x.Temperatures {
-		_result := HealthList{Name: x.Temperatures[i].Name,
-			Health: x.Temperatures[i].Status.Health,
-			State:  x.Temperatures[i].Status.State}
-		_health = append(_health, _result)
+		if x.Temperatures[i].Status.State == "Absent" {
+			continue
+		} else {
+			var shortName, extendedName string
+			shortName = x.Temperatures[i].Name
+			extendedName = x.Temperatures[i].Name
+
+			if strings.Contains(x.Temperatures[i].Name, ".") {
+				// eg. input : "32.3-PCI 2-Network controller"
+				parts := strings.SplitN(x.Temperatures[i].Name, "-", 3)
+				if len(parts) == 3 {
+					// eg output: Network Controller
+					shortName = parts[2]
+				}
+			} else {
+				// eg. input 01-Inlet Ambient"
+				_, after, found := strings.Cut(x.Temperatures[i].Name, "-")
+				if found {
+					// eg. output: Inlet Ambient"
+					shortName = after
+				}
+			}
+			_result := ThermalHealthDetails{
+				Name:          shortName + " Temp",
+				ExtendedName:  extendedName + " Temp",
+				Health:        x.Temperatures[i].Status.Health,
+				State:         x.Temperatures[i].Status.State,
+				Reading:       float64(x.Temperatures[i].ReadingCelsius),
+				UpperCritical: x.Temperatures[i].UpperThresholdCritical,
+				LowerCritical: 1, //hardcode as API doesnt provide value
+				UpperCaution:  nil,
+				LowerCaution:  nil,
+			}
+			_health = append(_health, _result)
+		}
 	}
 
 	return _health, nil
@@ -348,7 +372,7 @@ func (c *IloClient) GetProcessorHealthHP() ([]HealthList, error) {
 		procHealth := HealthList{
 			Name:   y.ProcessorType + "_" + y.ID,
 			Health: y.Status.Health,
-			State:  y.Oem.Hp.ConfigStatus.State,
+			State:  y.Status.State,
 		}
 		processHealth = append(processHealth, procHealth)
 	}
@@ -800,7 +824,7 @@ func (c *IloClient) GetEthernetInterfacesHP() ([]MACData, error) {
 			Name:        "EthernetInterface-" + y.Id,
 			Description: "Null",
 			MacAddress:  y.MACAddress,
-			State:       y.Status.State,
+			State:       y.LinkStatus,
 			Status:      y.Status.Health,
 			Vlan:        "Null",
 		}

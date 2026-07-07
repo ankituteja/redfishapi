@@ -1408,7 +1408,7 @@ func (c *IloClient) GetStorageRaidDell() ([]StorageRaidDetailsDell, error) {
 }
 
 // GetThermalHealthDell fetches the Thermal Health Details
-func (c *IloClient) GetThermalHealthDell() ([]ThermalHealthDetailsDell, error) {
+func (c *IloClient) GetThermalHealthDell() ([]ThermalHealthDetails, error) {
 	_url := c.Hostname + "/redfish/v1/Chassis/System.Embedded.1/Sensors"
 
 	resp, _, _, err := queryData(c, "GET", _url, nil)
@@ -1418,7 +1418,7 @@ func (c *IloClient) GetThermalHealthDell() ([]ThermalHealthDetailsDell, error) {
 
 	var (
 		x            MemberCountDell
-		_thermalData []ThermalHealthDetailsDell
+		_thermalData []ThermalHealthDetails
 	)
 
 	json.Unmarshal(resp, &x)
@@ -1440,7 +1440,7 @@ func (c *IloClient) GetThermalHealthDell() ([]ThermalHealthDetailsDell, error) {
 		var z ThermalSensorDetailsDell
 		json.Unmarshal(resp, &z)
 
-		thermalDevice := ThermalHealthDetailsDell{
+		thermalDevice := ThermalHealthDetails{
 			Name:          z.Name,
 			Reading:       z.Reading,
 			State:         z.Status.State,
