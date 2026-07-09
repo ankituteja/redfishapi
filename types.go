@@ -3961,6 +3961,9 @@ func (intInfo *MACData) UpdateEmpty() {
 	if intInfo.VendorName == "" {
 		intInfo.VendorName = "NULL"
 	}
+	if intInfo.State == "" {
+		intInfo.State = "NULL"
+	}
 }
 
 // BootOrderData ...
