@@ -881,7 +881,7 @@ func (c *IloClient) GetMacAddressModelHP() ([]MACModel, error) {
 			}
 
 			macModels = append(macModels, MACModel{
-				MacName:  ethernetInterface.Name + "-1",
+				MacName:  ethernetInterface.Name,
 				MacModel: adapter.Name,
 			})
 		}
