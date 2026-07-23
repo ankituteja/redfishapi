@@ -313,14 +313,14 @@ func (c *IloClient) GetMacAddressDell() (string, error) {
 }
 
 // GetMacAddressModelDell ... Will fetch the Nic Model
-func (c *IloClient) GetMacAddressModelDell() ([]MACModelDell, error) {
+func (c *IloClient) GetMacAddressModelDell() ([]MACModel, error) {
 	url := c.Hostname + "/redfish/v1/Systems/System.Embedded.1/NetworkAdapters/"
 	resp, _, _, err := queryData(c, "GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 	var x MemberCountDell
-	var Macs []MACModelDell
+	var Macs []MACModel
 	json.Unmarshal(resp, &x)
 	for i := range x.Members {
 		_url := c.Hostname + x.Members[i].OdataId
@@ -334,7 +334,7 @@ func (c *IloClient) GetMacAddressModelDell() ([]MACModelDell, error) {
 		for _, k := range y.Controllers {
 			for _, z := range k.Links.NetworkDeviceFunctions {
 				firmName := strings.Split(z.OdataId, "/")
-				result := MACModelDell{
+				result := MACModel{
 					MacName:  firmName[len(firmName)-1],
 					MacModel: y.Model,
 				}

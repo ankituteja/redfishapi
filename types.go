@@ -1599,10 +1599,31 @@ type GetMacAddressDell struct {
 	VLAN           string `json:"VLAN"`
 }
 
-// MACModelDell ...
-type MACModelDell struct {
+// MACModel ...
+type MACModel struct {
 	MacName  string `json:"mac_name"`
 	MacModel string `json:"mac_model"`
+}
+
+// BaseNetworkAdaptersHP ...
+type BaseNetworkAdaptersHP struct {
+	OdataContext        string                  `json:"@odata.context"`
+	OdataID             string                  `json:"@odata.id"`
+	OdataType           string                  `json:"@odata.type"`
+	Members             []Members               `json:"Members"`
+	Members_odata_count int                     `json:"Members@odata.count"`
+	Name                string                  `json:"Name"`
+}
+
+// BaseNetworkAdapterHP ...
+type BaseNetworkAdapterHP struct {
+	ID             string `json:"Id"`
+	Name           string `json:"Name"`
+	StructuredName string `json:"StructuredName"`
+	PhysicalPorts  []struct {
+		MacAddress string `json:"MacAddress"`
+		Name       string `json:"Name"`
+	} `json:"PhysicalPorts"`
 }
 
 // NetworkPortsDell ...

@@ -835,3 +835,57 @@ func (c *IloClient) GetEthernetInterfacesHP() ([]MACData, error) {
 
 	return _macData, nil
 }
+
+// GetMacAddressModelHP ... will fetch the NIC model and MAC address from EthernetInterfaces and BaseNetworkAdapters
+func (c *IloClient) GetMacAddressModelHP() ([]MACModel, error) {
+	ethernetInterfaces, err := c.GetEthernetInterfacesHP()
+	if err != nil {
+		return nil, err
+	}
+
+	ethernetByMAC := make(map[string]MACData)
+	for _, ethernetInterface := range ethernetInterfaces {
+		ethernetByMAC[strings.ToLower(ethernetInterface.MacAddress)] = ethernetInterface
+	}
+
+	url := c.Hostname + "/redfish/v1/Systems/1/BaseNetworkAdapters"
+	resp, _, _, err := queryData(c, "GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var collection BaseNetworkAdaptersHP
+	if err := json.Unmarshal(resp, &collection); err != nil {
+		return nil, err
+	}
+
+	var macModels []MACModel
+
+	for i := range collection.Members {
+		adapterURL := c.Hostname + collection.Members[i].OdataId
+		resp, _, _, err := queryData(c, "GET", adapterURL, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		var adapter BaseNetworkAdapterHP
+		if err := json.Unmarshal(resp, &adapter); err != nil {
+			return nil, err
+		}
+
+		for _, port := range adapter.PhysicalPorts {
+			macAddress := strings.ToLower(port.MacAddress)
+			ethernetInterface, ok := ethernetByMAC[macAddress]
+			if !ok {
+				continue
+			}
+
+			macModels = append(macModels, MACModel{
+				MacName:  ethernetInterface.Name,
+				MacModel: adapter.Name,
+			})
+		}
+	}
+
+	return macModels, nil
+}
