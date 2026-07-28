@@ -58,6 +58,7 @@ func (c *IloClient) GetSystemInfoHP() (SystemData, error) {
 	_result := SystemData{Health: x.Status.Health,
 		Memory:          totalMemoryGB,
 		Model:           x.Model,
+		HostName:        x.HostName,
 		PowerState:      x.PowerState,
 		Processors:      x.ProcessorSummary.Count,
 		ProcessorFamily: x.ProcessorSummary.Model,
