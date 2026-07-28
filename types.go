@@ -4194,6 +4194,7 @@ type SystemData struct {
 	SystemType      string  `json:"system_type"`
 	Model           string  `json:"model"`
 	Memory          float32 `json:"memory"`
+	HostName        string  `json:"hostname"`
 	Processors      int     `json:"processors"`
 	ProcessorFamily string  `json:"processor_family"`
 }
