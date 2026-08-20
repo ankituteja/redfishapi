@@ -37,6 +37,40 @@ func (c *IloClient) StopServerHP() (string, error) {
 	return "Server Stopped", nil
 }
 
+// GracefulRestartHP ... Will reboot iLO manager and may take some time to come up
+func (c *IloClient) GracefulRestartHP() (string, error) {
+	url := c.Hostname + "/redfish/v1/Managers/1/Actions/Manager.Reset"
+
+	var jsonStr = []byte(`{"ResetType":"GracefulRestart"}`)
+	_, _, _, err := queryData(c, "POST", url, jsonStr)
+	if err != nil {
+		return "", err
+	}
+
+	return "iLO Reboot", nil
+}
+
+// // ResetIloConfigurationHP ... Routes to the correct HP reset endpoint based on action type.
+// //
+// // Standard Redfish — POST /redfish/v1/Systems/1/Actions/ComputerSystem.Reset
+// //   "On"               → System Power ON
+// //   "GracefulShutdown" → Graceful Power Off
+// //   "ForceOff"         → Force Power Off
+// //   "ForceRestart"     → Force Power Cycle
+// //   "GracefulRestart"  → Force System Reset
+// //   "Nmi"              → Non-Maskable Interrupt
+// //   "PushPowerButton"  → Push Power Button
+// func (c *IloClient) ResetIloConfigurationHP(action string) (string, error) {
+// 	url := c.Hostname + "/redfish/v1/Systems/1/Actions/ComputerSystem.Reset"
+// 	payload, _ := json.Marshal(map[string]interface{}{"ResetType": action})
+
+// 	_, _, _, err := queryData(c, "POST", url, payload)
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	return action + " executed", nil
+// }
+
 // GetSystemInfoHP ... Will fetch the system info
 func (c *IloClient) GetSystemInfoHP() (SystemData, error) {
 
