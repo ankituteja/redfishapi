@@ -64,7 +64,7 @@ func (c *IloClient) GracefulRestartDell() (string, error) {
 		return "", err
 	}
 
-	return "Idrac Reboot", nil
+	return "Idrac Reboot Inprogress", nil
 
 }
 

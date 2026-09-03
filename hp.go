@@ -47,7 +47,7 @@ func (c *IloClient) GracefulRestartHP() (string, error) {
 		return "", err
 	}
 
-	return "iLO Reboot", nil
+	return "iLO Reboot Inprogress", nil
 }
 
 // // ResetIloConfigurationHP ... Routes to the correct HP reset endpoint based on action type.
